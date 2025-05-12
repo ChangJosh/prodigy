@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Math RPG Game</title>
+    <title>Cell Explorer: Biology Quest</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -10,6 +10,7 @@
             padding: 20px;
             background-color: #f0f8ff;
             color: #333;
+            line-height: 1.6;
         }
         .game-container {
             background-color: white;
@@ -29,9 +30,14 @@
             margin: 4px 2px;
             cursor: pointer;
             border-radius: 5px;
+            transition: background-color 0.3s;
         }
         button:hover {
             background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
         .battle-log {
             height: 200px;
@@ -41,6 +47,7 @@
             margin-top: 15px;
             background-color: #f9f9f9;
             border-radius: 5px;
+            font-family: monospace;
         }
         .stats {
             background-color: #e9f7ef;
@@ -48,42 +55,481 @@
             border-radius: 5px;
             margin-bottom: 15px;
         }
-        input {
+        input, select {
             padding: 8px;
             margin: 5px 0;
             border-radius: 4px;
             border: 1px solid #ddd;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .question {
+            background-color: #eef;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .options {
+            margin: 10px 0;
+        }
+        .option {
+            margin: 5px 0;
+            padding: 8px;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .option:hover {
+            background-color: #e0e0e0;
+        }
+        .correct {
+            background-color: #d4edda;
+        }
+        .incorrect {
+            background-color: #f8d7da;
+        }
+        .location-image {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #4CAF50;
+            border-radius: 5px;
+            width: 100%;
+            transition: width 0.3s;
+        }
+        .organelle-icon {
+            width: 30px;
+            height: 30px;
+            vertical-align: middle;
+            margin-right: 5px;
         }
     </style>
 </head>
 <body>
     <div class="game-container">
-        <h1>Math RPG Game</h1>
+        <h1>Cell Explorer: Biology Quest</h1>
         <div id="game-screen">
             <div id="welcome-screen">
-                <h2>Welcome to Math Quest!</h2>
-                <p>Enter your wizard's name:</p>
-                <input type="text" id="player-name" placeholder="Wizard Name">
-                <button onclick="startGame()">Begin Adventure</button>
+                <h2>Welcome to the Cellular World!</h2>
+                <p>You are a scientist shrunk down to explore the microscopic world of cells. Answer biology questions correctly to progress through different cellular environments!</p>
+                <p>Enter your scientist's name:</p>
+                <input type="text" id="player-name" placeholder="Scientist Name">
+                <button onclick="startGame()">Begin Exploration</button>
             </div>
         </div>
     </div>
 
     <script>
+        // Game data - all your biology questions
+        const biologyQuestions = [
+            {
+                question: "Which of the following is most relevant to the Calvin cycle?",
+                options: [
+                    "How does chlorophyll capture light?",
+                    "How is ATP used in the formation of 3-carbon carbohydrates?",
+                    "How is NADP+ reduced to NADPH?",
+                    "How is ATP produced in chemiosmosis?"
+                ],
+                answer: 1,
+                category: "Photosynthesis"
+            },
+            {
+                question: "During photosynthesis",
+                options: [
+                    "light reactions produce sugar, while the Calvin cycle produces O2.",
+                    "light reactions produce NADPH and ATP, while the Calvin cycle produces sugar.",
+                    "light reactions photo phosphorylate ADP, while the Calvin cycle produces ATP.",
+                    "the Calvin cycle produces both sugar and O2."
+                ],
+                answer: 1,
+                category: "Photosynthesis"
+            },
+            {
+                question: "Organisms that reproduce sexually exhibit zygotic, gametic, or sporic meiosis. One way to determine the type of life cycle an organism has is by",
+                options: [
+                    "observing embryonic development.",
+                    "comparing the diploid and haploid forms of the organism.",
+                    "determining when in the life cycle fertilization occurs.",
+                    "determining if gametes are multicellular or unicellular."
+                ],
+                answer: 1,
+                category: "Reproduction"
+            },
+            {
+                question: "If the transformation depicted in organelle B requires oxygen, what form of energy is represented by E IV?",
+                options: [
+                    "Radiant energy in the form of photons",
+                    "Chemical energy being stored as glycogen",
+                    "Chemical energy in the form of ATP",
+                    "Chemical energy released by glycolysis"
+                ],
+                answer: 2,
+                category: "Cellular Energy"
+            },
+            {
+                question: "What is the main function of the nucleus?",
+                options: [
+                    "Store nutrients",
+                    "Store and protect DNA",
+                    "Help with digestion",
+                    "Make proteins"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which organelle is responsible for making proteins?",
+                options: [
+                    "Mitochondria",
+                    "Ribosomes",
+                    "Lysosomes",
+                    "Golgi apparatus"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "Where are ribosomes made?",
+                options: [
+                    "Nucleolus",
+                    "Cytoplasm",
+                    "Endoplasmic reticulum",
+                    "Mitochondria"
+                ],
+                answer: 0,
+                category: "Cell Structure"
+            },
+            {
+                question: "What does the smooth endoplasmic reticulum (smooth ER) do?",
+                options: [
+                    "Make proteins",
+                    "Break down waste",
+                    "Make lipids and detoxify substances",
+                    "Make ATP"
+                ],
+                answer: 2,
+                category: "Cell Structure"
+            },
+            {
+                question: "What is the function of the rough ER?",
+                options: [
+                    "Helps make and transport proteins",
+                    "Produces glucose",
+                    "Packages DNA",
+                    "Stores calcium"
+                ],
+                answer: 0,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which organelle modifies and packages proteins?",
+                options: [
+                    "Ribosome",
+                    "Golgi apparatus",
+                    "Lysosome",
+                    "Nucleolus"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which organelle is the 'powerhouse' of the cell?",
+                options: [
+                    "Nucleus",
+                    "Mitochondria",
+                    "Golgi apparatus",
+                    "Ribosome"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which organelle helps break down waste in the cell?",
+                options: [
+                    "Nucleus",
+                    "Ribosome",
+                    "Lysosome",
+                    "Golgi body"
+                ],
+                answer: 2,
+                category: "Cell Structure"
+            },
+            {
+                question: "What is the function of the cytoskeleton?",
+                options: [
+                    "Gives the cell shape and helps with movement",
+                    "Stores energy",
+                    "Makes proteins",
+                    "Destroys invaders"
+                ],
+                answer: 0,
+                category: "Cell Structure"
+            },
+            {
+                question: "Where are most organelles found?",
+                options: [
+                    "Nucleus",
+                    "Cell wall",
+                    "Cytoplasm",
+                    "Golgi body"
+                ],
+                answer: 2,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which structure controls what enters and leaves the cell?",
+                options: [
+                    "Cell wall",
+                    "Cell membrane",
+                    "Nucleus",
+                    "Mitochondria"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "What is a function of the vacuole in plant cells?",
+                options: [
+                    "Stores water and nutrients",
+                    "Makes proteins",
+                    "Breaks down DNA",
+                    "Makes glucose"
+                ],
+                answer: 0,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which organelle is found only in plant cells and helps with photosynthesis?",
+                options: [
+                    "Mitochondria",
+                    "Chloroplast",
+                    "Nucleus",
+                    "Smooth ER"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "What is the function of the cell wall in plant cells?",
+                options: [
+                    "Store water",
+                    "Transport proteins",
+                    "Provide structure and protection",
+                    "Make proteins"
+                ],
+                answer: 2,
+                category: "Cell Structure"
+            },
+            {
+                question: "What type of cells have a cell wall and chloroplasts?",
+                options: [
+                    "Animal cells",
+                    "Plant cells",
+                    "Bacterial cells",
+                    "Fungal cells"
+                ],
+                answer: 1,
+                category: "Cell Types"
+            },
+            {
+                question: "What do prokaryotic cells lack?",
+                options: [
+                    "A nucleus",
+                    "DNA",
+                    "A cell wall",
+                    "A cell membrane"
+                ],
+                answer: 0,
+                category: "Cell Types"
+            },
+            {
+                question: "Which of the following is found in both prokaryotic and eukaryotic cells?",
+                options: [
+                    "Ribosomes",
+                    "Nucleus",
+                    "Mitochondria",
+                    "Golgi apparatus"
+                ],
+                answer: 0,
+                category: "Cell Types"
+            },
+            {
+                question: "Which organelle is responsible for cellular respiration?",
+                options: [
+                    "Chloroplast",
+                    "Golgi body",
+                    "Mitochondria",
+                    "Lysosome"
+                ],
+                answer: 2,
+                category: "Cell Function"
+            },
+            {
+                question: "How are proteins transported from the ER to the Golgi?",
+                options: [
+                    "Through cytoplasm directly",
+                    "In vesicles",
+                    "Through the nucleus",
+                    "Using DNA"
+                ],
+                answer: 1,
+                category: "Cell Function"
+            },
+            {
+                question: "What does the large central vacuole in plant cells do?",
+                options: [
+                    "Make ATP",
+                    "Store water and maintain turgor pressure",
+                    "Digest food",
+                    "Break down proteins"
+                ],
+                answer: 1,
+                category: "Cell Function"
+            },
+            {
+                question: "Which structure helps animal cells divide?",
+                options: [
+                    "Centrioles",
+                    "Lysosomes",
+                    "Ribosomes",
+                    "Chloroplasts"
+                ],
+                answer: 0,
+                category: "Cell Function"
+            },
+            {
+                question: "Why are mitochondria important to cells?",
+                options: [
+                    "They store water",
+                    "They produce energy (ATP)",
+                    "They make proteins",
+                    "They package enzymes"
+                ],
+                answer: 1,
+                category: "Cell Function"
+            },
+            {
+                question: "What is the jelly-like substance inside the cell called?",
+                options: [
+                    "DNA",
+                    "Nucleoplasm",
+                    "Cytoplasm",
+                    "Lysosome"
+                ],
+                answer: 2,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which organelle uses sunlight to make glucose?",
+                options: [
+                    "Mitochondria",
+                    "Chloroplast",
+                    "Ribosome",
+                    "Smooth ER"
+                ],
+                answer: 1,
+                category: "Cell Function"
+            },
+            {
+                question: "What is the main job of ribosomes?",
+                options: [
+                    "Store DNA",
+                    "Make energy",
+                    "Make proteins",
+                    "Control the cell"
+                ],
+                answer: 2,
+                category: "Cell Function"
+            },
+            {
+                question: "What surrounds the nucleus and lets things in and out?",
+                options: [
+                    "Cell wall",
+                    "Nuclear envelope",
+                    "Cytoplasm",
+                    "Nucleolus"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which organelle is involved in detoxifying harmful substances in the liver?",
+                options: [
+                    "Rough ER",
+                    "Smooth ER",
+                    "Lysosome",
+                    "Mitochondria"
+                ],
+                answer: 1,
+                category: "Cell Function"
+            },
+            {
+                question: "What structure helps proteins fold and get ready for transport?",
+                options: [
+                    "Nucleus",
+                    "Rough ER",
+                    "Golgi body",
+                    "Lysosome"
+                ],
+                answer: 1,
+                category: "Cell Function"
+            },
+            {
+                question: "Which part of the cell helps maintain its shape and allows for movement?",
+                options: [
+                    "Cytoskeleton",
+                    "Cell wall",
+                    "Ribosome",
+                    "Vesicle"
+                ],
+                answer: 0,
+                category: "Cell Structure"
+            },
+            {
+                question: "What do lysosomes contain to break down waste?",
+                options: [
+                    "Water",
+                    "Digestive enzymes",
+                    "Glucose",
+                    "Ribosomes"
+                ],
+                answer: 1,
+                category: "Cell Function"
+            }
+        ];
+
         // Game classes
         class Player {
             constructor(name) {
                 this.name = name;
                 this.level = 1;
-                this.hp = 50;
-                this.max_hp = 50;
+                this.hp = 100;
+                this.max_hp = 100;
                 this.exp = 0;
                 this.exp_to_level = 100;
-                this.spells = {
-                    "Fireball": {damage: 10, difficulty: "easy"},
-                    "Ice Shard": {damage: 15, difficulty: "medium"},
-                    "Lightning Bolt": {damage: 20, difficulty: "hard"}
+                this.knowledge = {
+                    "Cell Structure": 1,
+                    "Cell Function": 1,
+                    "Cell Types": 1,
+                    "Photosynthesis": 1,
+                    "Reproduction": 1,
+                    "Cellular Energy": 1
                 };
+                this.location = "Cell Membrane";
+                this.questionsAnswered = 0;
+                this.correctAnswers = 0;
             }
 
             levelUp() {
@@ -92,13 +538,22 @@
                 this.hp = this.max_hp;
                 this.exp -= this.exp_to_level;
                 this.exp_to_level = Math.floor(this.exp_to_level * 1.5);
+                
+                // Improve knowledge in random categories
+                const categories = Object.keys(this.knowledge);
+                const randomCategory1 = categories[Math.floor(Math.random() * categories.length)];
+                const randomCategory2 = categories[Math.floor(Math.random() * categories.length)];
+                this.knowledge[randomCategory1] += 1;
+                this.knowledge[randomCategory2] += 1;
+                
                 logMessage(`🌟 ${this.name} leveled up to Level ${this.level}! 🌟`);
                 logMessage(`Max HP increased to ${this.max_hp}!`);
+                logMessage(`Your knowledge in ${randomCategory1} and ${randomCategory2} improved!`);
             }
 
             heal(amount) {
                 this.hp = Math.min(this.hp + amount, this.max_hp);
-                logMessage(`You healed for ${amount} HP! Current HP: ${this.hp}/${this.max_hp}`);
+                logMessage(`You used a health pack! +${amount} HP. Current HP: ${this.hp}/${this.max_hp}`);
             }
 
             takeDamage(damage) {
@@ -119,26 +574,42 @@
                 }
             }
 
+            answerQuestion(correct) {
+                this.questionsAnswered++;
+                if (correct) {
+                    this.correctAnswers++;
+                }
+            }
+
+            getAccuracy() {
+                return this.questionsAnswered > 0 
+                    ? Math.round((this.correctAnswers / this.questionsAnswered) * 100)
+                    : 0;
+            }
+
             displayStats() {
                 let stats = `=== ${this.name} ===<br>`;
                 stats += `Level: ${this.level}<br>`;
                 stats += `HP: ${this.hp}/${this.max_hp}<br>`;
                 stats += `EXP: ${this.exp}/${this.exp_to_level}<br>`;
-                stats += `Spells:<br>`;
-                for (const [spell, details] of Object.entries(this.spells)) {
-                    stats += `- ${spell}: ${details.damage} damage (${details.difficulty} math)<br>`;
+                stats += `Location: ${this.location}<br>`;
+                stats += `Accuracy: ${this.getAccuracy()}%<br>`;
+                stats += `Knowledge:<br>`;
+                for (const [category, level] of Object.entries(this.knowledge)) {
+                    stats += `- ${category}: ${"★".repeat(level)}${"☆".repeat(5-level)}<br>`;
                 }
                 return stats;
             }
         }
 
-        class Monster {
-            constructor(name, level) {
+        class Enemy {
+            constructor(name, level, category) {
                 this.name = name;
                 this.level = level;
                 this.hp = 30 + (level * 10);
                 this.max_hp = this.hp;
                 this.damage = 5 + (level * 2);
+                this.category = category;
             }
 
             takeDamage(damage) {
@@ -152,7 +623,7 @@
             }
 
             attack(player) {
-                logMessage(`${this.name} attacks you!`);
+                logMessage(`${this.name} attacks you with a ${this.category} question!`);
                 return player.takeDamage(this.damage);
             }
 
@@ -161,17 +632,53 @@
                 stats += `Level: ${this.level}<br>`;
                 stats += `HP: ${this.hp}/${this.max_hp}<br>`;
                 stats += `Damage: ${this.damage}<br>`;
+                stats += `Category: ${this.category}<br>`;
                 return stats;
+            }
+
+            getQuestion() {
+                // Filter questions by category and difficulty
+                const availableQuestions = biologyQuestions.filter(q => 
+                    q.category === this.category
+                );
+                
+                if (availableQuestions.length > 0) {
+                    return availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+                }
+                
+                // Fallback to any question if no category match
+                return biologyQuestions[Math.floor(Math.random() * biologyQuestions.length)];
             }
         }
 
         // Game state
         let player;
-        let currentMonster = null;
-        let currentSpell = null;
-        let mathAnswer = null;
+        let currentEnemy = null;
+        let currentQuestion = null;
+        let selectedAnswer = null;
 
-        // Helper functions
+        // Locations with their categories
+        const locations = [
+            { name: "Cell Membrane", categories: ["Cell Structure"], image: "🧫" },
+            { name: "Cytoplasm", categories: ["Cell Structure", "Cell Function"], image: "🧬" },
+            { name: "Nucleus", categories: ["Cell Structure"], image: "🧪" },
+            { name: "Mitochondria", categories: ["Cell Function", "Cellular Energy"], image: "🔋" },
+            { name: "Chloroplast", categories: ["Photosynthesis"], image: "🌿" },
+            { name: "Golgi Apparatus", categories: ["Cell Function"], image: "📦" },
+            { name: "Endoplasmic Reticulum", categories: ["Cell Function"], image: "🌀" }
+        ];
+
+        // Enemy types by category
+        const enemyTypes = {
+            "Cell Structure": ["Misfolded Protein", "Viral Invader", "Damaged Organelle"],
+            "Cell Function": ["Toxic Metabolite", "Energy Parasite", "Dysfunctional Enzyme"],
+            "Cell Types": ["Mutated Cell", "Aggressive Microbe", "Hostile Prokaryote"],
+            "Photosynthesis": ["Light Blocker", "Chlorophyll Eater", "Oxygen Thief"],
+            "Reproduction": ["DNA Breaker", "Mutagen", "Cell Division Disruptor"],
+            "Cellular Energy": ["ATP Drainer", "Mitochondrial Virus", "Energy Vampire"]
+        };
+
+        // DOM helper functions
         function logMessage(message) {
             const battleLog = document.getElementById('battle-log');
             if (battleLog) {
@@ -191,48 +698,18 @@
 
         function showMainMenu() {
             clearScreen();
+            
+            const location = locations.find(loc => loc.name === player.location);
             const html = `
                 <div class="stats">${player.displayStats()}</div>
-                <h2>What would you like to do?</h2>
-                <button onclick="explore()">Explore</button>
+                <h2>Current Location: ${player.location} ${location.image}</h2>
+                <h3>What would you like to do?</h3>
+                <button onclick="explore()">Explore ${location.image}</button>
                 <button onclick="rest()">Rest (heal to full HP)</button>
+                <button onclick="moveLocation()">Move to new location</button>
                 <div id="battle-log" class="battle-log"></div>
             `;
             document.getElementById('game-screen').innerHTML = html;
-        }
-
-        function generateMathProblem(difficulty) {
-            let a, b, op;
-            if (difficulty === "easy") {
-                a = Math.floor(Math.random() * 10) + 1;
-                b = Math.floor(Math.random() * 10) + 1;
-                op = Math.random() < 0.5 ? '+' : '-';
-            } else if (difficulty === "medium") {
-                a = Math.floor(Math.random() * 11) + 5;
-                b = Math.floor(Math.random() * 11) + 5;
-                const ops = ['+', '-', '*'];
-                op = ops[Math.floor(Math.random() * ops.length)];
-            } else { // hard
-                a = Math.floor(Math.random() * 11) + 10;
-                b = Math.floor(Math.random() * 10) + 1;
-                op = Math.random() < 0.5 ? '*' : '/';
-            }
-
-            let problem;
-            let answer;
-            
-            if (op === '/') {
-                // For division, make sure it divides evenly
-                answer = Math.floor(Math.random() * 5) + 1;
-                b = a * answer;
-                problem = `${b} / ${a}`;
-                answer = answer; // b / a = answer
-            } else {
-                problem = `${a} ${op} ${b}`;
-                answer = eval(problem);
-            }
-
-            return { problem, answer };
         }
 
         // Game functions
@@ -243,39 +720,38 @@
                 return;
             }
             player = new Player(name);
-            logMessage(`Welcome, ${name}! Let the adventure begin!`);
+            logMessage(`Welcome, Dr. ${name}! You've been miniaturized to explore the cellular world.`);
+            logMessage(`Answer biology questions correctly to defeat cellular threats and advance your research!`);
             showMainMenu();
         }
 
         function explore() {
-            const locations = [
-                "Enchanted Forest",
-                "Mystic Mountains",
-                "Ancient Ruins",
-                "Dragon's Valley",
-                "Wizard's Tower"
-            ];
-            
-            const currentLocation = locations[Math.floor(Math.random() * locations.length)];
-            logMessage(`You are exploring ${currentLocation}...`);
+            const location = locations.find(loc => loc.name === player.location);
+            logMessage(`You're exploring the ${player.location} ${location.image}...`);
             
             // Random events
             const event = Math.random();
             
-            if (event < 0.6) { // 60% chance of battle
-                const monsterLevel = Math.max(1, player.level + Math.floor(Math.random() * 3) - 1);
-                const monsters = [
-                    "Goblin", "Skeleton", "Slime", "Wolf", "Orc",
-                    "Troll", "Dragonling", "Ghost", "Spider", "Bat"
-                ];
-                const monsterName = monsters[Math.floor(Math.random() * monsters.length)];
-                currentMonster = new Monster(monsterName, monsterLevel);
+            if (event < 0.7) { // 70% chance of encounter
+                // Choose random category from location's categories
+                const category = location.categories[Math.floor(Math.random() * location.categories.length)];
+                
+                // Enemy level based on player level and knowledge
+                const baseLevel = Math.max(1, player.level + Math.floor(Math.random() * 3) - 1);
+                const knowledgeModifier = Math.floor(player.knowledge[category] / 2);
+                const enemyLevel = Math.max(1, baseLevel - knowledgeModifier);
+                
+                const enemies = enemyTypes[category];
+                const enemyName = enemies[Math.floor(Math.random() * enemies.length)];
+                currentEnemy = new Enemy(enemyName, enemyLevel, category);
+                
+                logMessage(`⚠️ You encounter a ${currentEnemy.name} (Level ${currentEnemy.level})! ⚠️`);
                 startBattle();
-            } else if (event < 0.8) { // 20% chance to find health potion
-                logMessage("You found a health potion! +20 HP");
+            } else if (event < 0.9) { // 20% chance to find health pack
+                logMessage("You found a health pack! +20 HP");
                 player.heal(20);
                 showMainMenu();
-            } else { // 20% chance nothing happens
+            } else { // 10% chance nothing happens
                 logMessage("You explore the area but find nothing of interest.");
                 showMainMenu();
             }
@@ -283,121 +759,141 @@
 
         function startBattle() {
             clearScreen();
-            logMessage(`⚔️ A wild ${currentMonster.name} (Level ${currentMonster.level}) appears! ⚔️`);
+            
+            currentQuestion = currentEnemy.getQuestion();
+            const location = locations.find(loc => loc.name === player.location);
             
             const html = `
                 <div class="stats">${player.displayStats()}</div>
-                <div>${currentMonster.displayStats()}</div>
-                <h3>What will you do?</h3>
-                <button onclick="showSpells()">Attack with spell</button>
-                <button onclick="usePotion()">Use health potion (heals 20 HP)</button>
-                <button onclick="tryFlee()">Try to flee</button>
-                <div id="battle-log" class="battle-log"></div>
-                <div id="math-problem-container" style="display: none;">
-                    <h3 id="math-problem-text"></h3>
-                    <input type="number" id="math-answer" placeholder="Your answer">
-                    <button onclick="checkMathAnswer()">Submit</button>
+                <div>${currentEnemy.displayStats()}</div>
+                <h2>${player.location} ${location.image}</h2>
+                <h3>Battle against ${currentEnemy.name}</h3>
+                
+                <div class="question">
+                    <h4>${currentQuestion.question}</h4>
+                    <div class="options" id="options-container">
+                        ${currentQuestion.options.map((option, index) => `
+                            <div class="option" onclick="selectAnswer(${index})">
+                                ${String.fromCharCode(65 + index)}) ${option}
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
+                
+                <button id="submit-btn" onclick="checkAnswer()" disabled>Submit Answer</button>
+                <button onclick="tryFlee()">Try to Flee</button>
+                
+                <div id="battle-log" class="battle-log"></div>
             `;
             document.getElementById('game-screen').innerHTML = html;
         }
 
-        function showSpells() {
-            document.getElementById('math-problem-container').style.display = 'block';
-            const spells = Object.keys(player.spells);
-            const spellButtons = spells.map((spell, index) => 
-                `<button onclick="selectSpell('${spell}')">${spell} (${player.spells[spell].difficulty} math)</button>`
-            ).join('');
+        function selectAnswer(index) {
+            // Remove previous selection
+            const options = document.querySelectorAll('.option');
+            options.forEach(opt => opt.classList.remove('selected'));
             
-            const html = `
-                <h3>Choose a spell:</h3>
-                ${spellButtons}
-            `;
+            // Add selection to clicked option
+            options[index].classList.add('selected');
+            selectedAnswer = index;
             
-            const container = document.createElement('div');
-            container.innerHTML = html;
-            document.getElementById('game-screen').appendChild(container);
+            // Enable submit button
+            document.getElementById('submit-btn').disabled = false;
         }
 
-        function selectSpell(spell) {
-            currentSpell = spell;
-            const difficulty = player.spells[spell].difficulty;
-            const { problem, answer } = generateMathProblem(difficulty);
-            mathAnswer = answer;
+        function checkAnswer() {
+            const correct = selectedAnswer === currentQuestion.answer;
+            player.answerQuestion(correct);
             
-            document.getElementById('math-problem-text').textContent = 
-                `Solve this math problem to cast ${spell}: What is ${problem}?`;
-            document.getElementById('math-answer').value = '';
-            document.getElementById('math-answer').focus();
-        }
-
-        function checkMathAnswer() {
-            const userAnswer = parseInt(document.getElementById('math-answer').value);
+            // Highlight correct and incorrect answers
+            const options = document.querySelectorAll('.option');
+            options.forEach((opt, index) => {
+                if (index === currentQuestion.answer) {
+                    opt.classList.add('correct');
+                } else if (index === selectedAnswer && !correct) {
+                    opt.classList.add('incorrect');
+                }
+            });
             
-            if (isNaN(userAnswer)) {
-                logMessage("Please enter a valid number!");
-                return;
-            }
+            // Disable all options
+            options.forEach(opt => {
+                opt.style.pointerEvents = 'none';
+            });
             
-            if (userAnswer === mathAnswer) {
-                const damage = player.spells[currentSpell].damage;
-                logMessage(`✨ ${currentSpell} hits ${currentMonster.name} for ${damage} damage! ✨`);
+            // Disable submit button
+            document.getElementById('submit-btn').disabled = true;
+            
+            if (correct) {
+                const knowledgeBonus = player.knowledge[currentQuestion.category] || 1;
+                const damage = 10 * knowledgeBonus;
                 
-                if (currentMonster.takeDamage(damage)) {
-                    const expGain = currentMonster.level * 20;
+                logMessage(`✅ Correct! Your ${currentQuestion.category} knowledge helped you deal ${damage} damage!`);
+                
+                if (currentEnemy.takeDamage(damage)) {
+                    const expGain = currentEnemy.level * 20;
                     player.gainExp(expGain);
-                    currentMonster = null;
-                    setTimeout(showMainMenu, 1500);
+                    currentEnemy = null;
+                    setTimeout(showMainMenu, 2000);
                     return;
                 }
             } else {
-                logMessage(`❌ Incorrect! The answer was ${mathAnswer}. Your spell fizzles!`);
+                logMessage(`❌ Incorrect! The correct answer was ${String.fromCharCode(65 + currentQuestion.answer)}.`);
             }
             
-            // Monster's turn if it's still alive
-            if (currentMonster && currentMonster.hp > 0) {
+            // Enemy's turn if it's still alive
+            if (currentEnemy && currentEnemy.hp > 0) {
                 setTimeout(() => {
-                    if (currentMonster.attack(player)) {
+                    if (currentEnemy.attack(player)) {
                         gameOver();
                     } else {
                         startBattle();
                     }
-                }, 1000);
-            }
-        }
-
-        function usePotion() {
-            player.heal(20);
-            
-            // Monster's turn
-            if (currentMonster.hp > 0) {
-                setTimeout(() => {
-                    if (currentMonster.attack(player)) {
-                        gameOver();
-                    } else {
-                        startBattle();
-                    }
-                }, 1000);
+                }, 2000);
             }
         }
 
         function tryFlee() {
             if (Math.random() < 0.5) {
                 logMessage("You successfully fled from battle!");
-                currentMonster = null;
+                currentEnemy = null;
                 showMainMenu();
             } else {
                 logMessage("You failed to flee!");
                 
-                // Monster's turn
+                // Enemy's turn
                 setTimeout(() => {
-                    if (currentMonster.attack(player)) {
+                    if (currentEnemy.attack(player)) {
                         gameOver();
                     } else {
                         startBattle();
                     }
                 }, 1000);
             }
+        }
+
+        function moveLocation() {
+            clearScreen();
+            
+            const html = `
+                <h2>Choose a new location to explore:</h2>
+                ${locations.map(loc => `
+                    <div style="margin: 10px 0;">
+                        <button onclick="changeLocation('${loc.name}')">
+                            ${loc.name} ${loc.image}
+                        </button>
+                        <br>
+                        <small>Categories: ${loc.categories.join(", ")}</small>
+                    </div>
+                `).join('')}
+                <button onclick="showMainMenu()">Back</button>
+            `;
+            document.getElementById('game-screen').innerHTML = html;
+        }
+
+        function changeLocation(locationName) {
+            player.location = locationName;
+            logMessage(`You moved to the ${locationName}.`);
+            showMainMenu();
         }
 
         function rest() {
@@ -407,17 +903,28 @@
 
         function gameOver() {
             clearScreen();
-            document.getElementById('game-screen').innerHTML = `
+            const accuracy = player.getAccuracy();
+            
+            const html = `
                 <h2>Game Over!</h2>
-                <p>Better luck next time, ${player.name}!</p>
-                <button onclick="resetGame()">Play Again</button>
+                <p>Your cellular exploration has ended, Dr. ${player.name}.</p>
+                <p>Final Level: ${player.level}</p>
+                <p>Questions Answered: ${player.questionsAnswered}</p>
+                <p>Accuracy: ${accuracy}%</p>
+                
+                ${accuracy > 80 ? `<p>🏆 Excellent work! Your biology knowledge is impressive!</p>` : ''}
+                ${accuracy > 60 ? `<p>👍 Good job! Keep studying to improve!</p>` : ''}
+                ${accuracy <= 60 ? `<p>📚 Review your biology concepts and try again!</p>` : ''}
+                
+                <button onclick="resetGame()">Start New Game</button>
             `;
+            document.getElementById('game-screen').innerHTML = html;
         }
 
         function resetGame() {
             const name = player.name;
             player = new Player(name);
-            logMessage(`Welcome back, ${name}! Let the adventure begin!`);
+            logMessage(`Welcome back, Dr. ${name}! Beginning new cellular exploration...`);
             showMainMenu();
         }
     </script>
