@@ -213,6 +213,16 @@
             border: 2px solid rgba(255,255,255,0.1);
         }
         
+        .enemy-video {
+            width: 100%;
+            max-height: 250px;
+            border-radius: 12px;
+            margin: 20px 0;
+            object-fit: cover;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            border: 2px solid rgba(253, 121, 168, 0.3);
+        }
+        
         .progress-container {
             width: 100%;
             background: rgba(255,255,255,0.1);
@@ -228,27 +238,6 @@
             border-radius: 50px;
             width: 100%;
             transition: width 0.5s ease-out;
-        }
-        
-        .enemy-video {
-            width: 100%;
-            max-height: 250px;
-            border-radius: 12px;
-            margin: 20px 0;
-            object-fit: cover;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-            border: 2px solid rgba(253, 121, 168, 0.3);
-        }
-        
-        .knowledge-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            background: rgba(108, 92, 231, 0.2);
-            border-radius: 4px;
-            font-size: 0.8rem;
-            margin-right: 5px;
-            margin-bottom: 5px;
-            border: 1px solid var(--primary);
         }
         
         .pulse {
@@ -324,6 +313,72 @@
             margin-right: 5px;
         }
         
+        /* Overlay styles */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .overlay-content {
+            background-color: rgba(45, 52, 54, 0.95);
+            padding: 30px;
+            border-radius: 16px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 30px rgba(108, 92, 231, 0.5);
+            position: relative;
+        }
+        
+        .close-overlay {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--danger);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .knowledge-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .knowledge-item {
+            background: rgba(108, 92, 231, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--primary);
+        }
+        
+        .knowledge-stars {
+            font-size: 1.2rem;
+            color: var(--warning);
+            margin-top: 5px;
+        }
+        
         /* Responsive design */
         @media (max-width: 768px) {
             body {
@@ -341,6 +396,15 @@
             button {
                 padding: 10px 20px;
                 font-size: 14px;
+            }
+            
+            .overlay-content {
+                width: 90%;
+                padding: 20px;
+            }
+            
+            .knowledge-container {
+                grid-template-columns: 1fr 1fr;
             }
         }
     </style>
@@ -365,6 +429,16 @@
         </div>
     </div>
     
+    <!-- Overlay for knowledge display -->
+    <div id="knowledge-overlay" class="overlay" style="display: none;">
+        <div class="overlay-content">
+            <button class="close-overlay" onclick="closeOverlay()">×</button>
+            <h2>Your Knowledge Base</h2>
+            <p>Your expertise in different biology categories affects your damage against pathogens.</p>
+            <div class="knowledge-container" id="knowledge-display"></div>
+        </div>
+    </div>
+    
     <div id="damage-effect" class="damage-effect"></div>
     <div id="heal-effect" class="heal-effect"></div>
 
@@ -382,9 +456,393 @@
                 answer: 1,
                 category: "Photosynthesis"
             },
-            // ... (include all your other questions here)
-            // I've omitted them for brevity but you should include all from your list
+            {
+                question: "During photosynthesis",
+                options: [
+                    "light reactions produce sugar, while the Calvin cycle produces O2.",
+                    "light reactions produce NADPH and ATP, while the Calvin cycle produces sugar.",
+                    "light reactions photo phosphorylate ADP, while the Calvin cycle produces ATP.",
+                    "the Calvin cycle produces both sugar and O2."
+                ],
+                answer: 1,
+                category: "Photosynthesis"
+            },
+            {
+                question: "Organisms that reproduce sexually exhibit zygotic, gametic, or sporic meiosis. One way to determine the type of life cycle an organism has is by",
+                options: [
+                    "observing embryonic development.",
+                    "comparing the diploid and haploid forms of the organism.",
+                    "determining when in the life cycle fertilization occurs.",
+                    "determining if gametes are multicellular or unicellular."
+                ],
+                answer: 1,
+                category: "Reproduction"
+            },
+            {
+                question: "If the transformation depicted in organelle B requires oxygen, what form of energy is represented by E IV?",
+                options: [
+                    "Radiant energy in the form of photons",
+                    "Chemical energy being stored as glycogen",
+                    "Chemical energy in the form of ATP",
+                    "Chemical energy released by glycolysis"
+                ],
+                answer: 2,
+                category: "Cellular Energy"
+            },
+            {
+                question: "What is the main function of the nucleus?",
+                options: [
+                    "Store nutrients",
+                    "Store and protect DNA",
+                    "Help with digestion",
+                    "Make proteins"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which organelle is responsible for making proteins?",
+                options: [
+                    "Mitochondria",
+                    "Ribosomes",
+                    "Lysosomes",
+                    "Golgi apparatus"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "Where are ribosomes made?",
+                options: [
+                    "Nucleolus",
+                    "Cytoplasm",
+                    "Endoplasmic reticulum",
+                    "Mitochondria"
+                ],
+                answer: 0,
+                category: "Cell Structure"
+            },
+            {
+                question: "What does the smooth endoplasmic reticulum (smooth ER) do?",
+                options: [
+                    "Make proteins",
+                    "Break down waste",
+                    "Make lipids and detoxify substances",
+                    "Make ATP"
+                ],
+                answer: 2,
+                category: "Cell Structure"
+            },
+            {
+                question: "What is the function of the rough ER?",
+                options: [
+                    "Helps make and transport proteins",
+                    "Produces glucose",
+                    "Packages DNA",
+                    "Stores calcium"
+                ],
+                answer: 0,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which organelle modifies and packages proteins?",
+                options: [
+                    "Ribosome",
+                    "Golgi apparatus",
+                    "Lysosome",
+                    "Nucleolus"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which organelle is the 'powerhouse' of the cell?",
+                options: [
+                    "Nucleus",
+                    "Mitochondria",
+                    "Golgi apparatus",
+                    "Ribosome"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which organelle helps break down waste in the cell?",
+                options: [
+                    "Nucleus",
+                    "Ribosome",
+                    "Lysosome",
+                    "Golgi body"
+                ],
+                answer: 2,
+                category: "Cell Structure"
+            },
+            {
+                question: "What is the function of the cytoskeleton?",
+                options: [
+                    "Gives the cell shape and helps with movement",
+                    "Stores energy",
+                    "Makes proteins",
+                    "Destroys invaders"
+                ],
+                answer: 0,
+                category: "Cell Structure"
+            },
+            {
+                question: "Where are most organelles found?",
+                options: [
+                    "Nucleus",
+                    "Cell wall",
+                    "Cytoplasm",
+                    "Golgi body"
+                ],
+                answer: 2,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which structure controls what enters and leaves the cell?",
+                options: [
+                    "Cell wall",
+                    "Cell membrane",
+                    "Nucleus",
+                    "Mitochondria"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "What is a function of the vacuole in plant cells?",
+                options: [
+                    "Stores water and nutrients",
+                    "Makes proteins",
+                    "Breaks down DNA",
+                    "Makes glucose"
+                ],
+                answer: 0,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which organelle is found only in plant cells and helps with photosynthesis?",
+                options: [
+                    "Mitochondria",
+                    "Chloroplast",
+                    "Nucleus",
+                    "Smooth ER"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "What is the function of the cell wall in plant cells?",
+                options: [
+                    "Store water",
+                    "Transport proteins",
+                    "Provide structure and protection",
+                    "Make proteins"
+                ],
+                answer: 2,
+                category: "Cell Structure"
+            },
+            {
+                question: "What type of cells have a cell wall and chloroplasts?",
+                options: [
+                    "Animal cells",
+                    "Plant cells",
+                    "Bacterial cells",
+                    "Fungal cells"
+                ],
+                answer: 1,
+                category: "Cell Types"
+            },
+            {
+                question: "What do prokaryotic cells lack?",
+                options: [
+                    "A nucleus",
+                    "DNA",
+                    "A cell wall",
+                    "A cell membrane"
+                ],
+                answer: 0,
+                category: "Cell Types"
+            },
+            {
+                question: "Which of the following is found in both prokaryotic and eukaryotic cells?",
+                options: [
+                    "Ribosomes",
+                    "Nucleus",
+                    "Mitochondria",
+                    "Golgi apparatus"
+                ],
+                answer: 0,
+                category: "Cell Types"
+            },
+            {
+                question: "Which organelle is responsible for cellular respiration?",
+                options: [
+                    "Chloroplast",
+                    "Golgi body",
+                    "Mitochondria",
+                    "Lysosome"
+                ],
+                answer: 2,
+                category: "Cell Function"
+            },
+            {
+                question: "How are proteins transported from the ER to the Golgi?",
+                options: [
+                    "Through cytoplasm directly",
+                    "In vesicles",
+                    "Through the nucleus",
+                    "Using DNA"
+                ],
+                answer: 1,
+                category: "Cell Function"
+            },
+            {
+                question: "What does the large central vacuole in plant cells do?",
+                options: [
+                    "Make ATP",
+                    "Store water and maintain turgor pressure",
+                    "Digest food",
+                    "Break down proteins"
+                ],
+                answer: 1,
+                category: "Cell Function"
+            },
+            {
+                question: "Which structure helps animal cells divide?",
+                options: [
+                    "Centrioles",
+                    "Lysosomes",
+                    "Ribosomes",
+                    "Chloroplasts"
+                ],
+                answer: 0,
+                category: "Cell Function"
+            },
+            {
+                question: "Why are mitochondria important to cells?",
+                options: [
+                    "They store water",
+                    "They produce energy (ATP)",
+                    "They make proteins",
+                    "They package enzymes"
+                ],
+                answer: 1,
+                category: "Cell Function"
+            },
+            {
+                question: "What is the jelly-like substance inside the cell called?",
+                options: [
+                    "DNA",
+                    "Nucleoplasm",
+                    "Cytoplasm",
+                    "Lysosome"
+                ],
+                answer: 2,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which organelle uses sunlight to make glucose?",
+                options: [
+                    "Mitochondria",
+                    "Chloroplast",
+                    "Ribosome",
+                    "Smooth ER"
+                ],
+                answer: 1,
+                category: "Cell Function"
+            },
+            {
+                question: "What is the main job of ribosomes?",
+                options: [
+                    "Store DNA",
+                    "Make energy",
+                    "Make proteins",
+                    "Control the cell"
+                ],
+                answer: 2,
+                category: "Cell Function"
+            },
+            {
+                question: "What surrounds the nucleus and lets things in and out?",
+                options: [
+                    "Cell wall",
+                    "Nuclear envelope",
+                    "Cytoplasm",
+                    "Nucleolus"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which organelle is involved in detoxifying harmful substances in the liver?",
+                options: [
+                    "Rough ER",
+                    "Smooth ER",
+                    "Lysosome",
+                    "Mitochondria"
+                ],
+                answer: 1,
+                category: "Cell Function"
+            },
+            {
+                question: "What structure helps proteins fold and get ready for transport?",
+                options: [
+                    "Nucleus",
+                    "Rough ER",
+                    "Golgi body",
+                    "Lysosome"
+                ],
+                answer: 1,
+                category: "Cell Function"
+            },
+            {
+                question: "Which part of the cell helps maintain its shape and allows for movement?",
+                options: [
+                    "Cytoskeleton",
+                    "Cell wall",
+                    "Ribosome",
+                    "Vesicle"
+                ],
+                answer: 0,
+                category: "Cell Structure"
+            },
+            {
+                question: "What do lysosomes contain to break down waste?",
+                options: [
+                    "Water",
+                    "Digestive enzymes",
+                    "Glucose",
+                    "Ribosomes"
+                ],
+                answer: 1,
+                category: "Cell Function"
+            }
         ];
+
+        // Track which questions have been used
+        const usedQuestionIndices = new Set();
+
+        function getRandomQuestion(category) {
+            // Filter questions by category and unused ones
+            const availableQuestions = biologyQuestions
+                .map((q, index) => ({...q, index}))
+                .filter(q => 
+                    (category ? q.category === category : true) && 
+                    !usedQuestionIndices.has(q.index)
+                );
+
+            if (availableQuestions.length === 0) {
+                // If all questions have been used, reset the used set
+                usedQuestionIndices.clear();
+                return getRandomQuestion(category);
+            }
+
+            const randomQuestion = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+            usedQuestionIndices.add(randomQuestion.index);
+            return randomQuestion;
+        }
 
         // Game classes
         class Player {
@@ -424,7 +882,7 @@
                 
                 logMessage(`<span style="color: var(--accent);">🌟 ${this.name} leveled up to Level ${this.level}! 🌟</span>`);
                 logMessage(`Max HP increased to ${this.max_hp}!`);
-                logMessage(`Your knowledge in <span class="knowledge-badge">${randomCategory1}</span> and <span class="knowledge-badge">${randomCategory2}</span> improved!`);
+                logMessage(`Your knowledge in <span style="color: var(--primary);">${randomCategory1}</span> and <span style="color: var(--primary);">${randomCategory2}</span> improved!`);
                 
                 // Play level up effect
                 document.getElementById('heal-effect').style.opacity = '0.5';
@@ -496,13 +954,8 @@
                 stats += `<div style="margin: 10px 0;">Location: <strong>${this.location}</strong></div>`;
                 stats += `<div style="margin-bottom: 10px;">Accuracy: <strong>${this.getAccuracy()}%</strong></div>`;
                 
-                // Knowledge
-                stats += `<div>Knowledge:</div>`;
-                stats += `<div style="display: flex; flex-wrap: wrap; margin-top: 5px;">`;
-                for (const [category, level] of Object.entries(this.knowledge)) {
-                    stats += `<div class="knowledge-badge">${category}: ${"★".repeat(level)}${"☆".repeat(5-level)}</div>`;
-                }
-                stats += `</div>`;
+                // Knowledge - now clickable
+                stats += `<div>Knowledge: <span style="color: var(--accent); cursor: pointer; text-decoration: underline;" onclick="showKnowledgeOverlay()">View Details</span></div>`;
                 
                 return stats;
             }
@@ -529,6 +982,12 @@
                 };
                 
                 return videos[this.name] || videos.default;
+            }
+
+            getQuestion() {
+                // Get a random unused question from the category
+                const question = getRandomQuestion(this.category);
+                return question;
             }
 
             takeDamage(damage) {
@@ -561,32 +1020,24 @@
                 stats += `<div style="margin-bottom: 5px;">HP: ${this.hp}/${this.max_hp}</div>`;
                 stats += `<div class="progress-container"><div class="progress-bar" style="width: ${(this.hp / this.max_hp) * 100}%; background: linear-gradient(90deg, var(--danger), #e17055);"></div></div>`;
                 
-                stats += `<div style="margin: 5px 0;">Category: <span class="knowledge-badge">${this.category}</span></div>`;
+                stats += `<div style="margin: 5px 0;">Category: <span style="color: ${this.getCategoryColor()}">${this.category}</span></div>`;
                 stats += `<div>Damage: <strong>${this.damage}</strong></div>`;
                 
                 return stats;
             }
 
-            getQuestion() {
-                // Filter questions by category and difficulty
-                const availableQuestions = biologyQuestions.filter(q => 
-                    q.category === this.category
-                );
-                
-                if (availableQuestions.length > 0) {
-                    return availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
-                }
-                
-                // Fallback to any question if no category match
-                return biologyQuestions[Math.floor(Math.random() * biologyQuestions.length)];
+            getCategoryColor() {
+                const colors = {
+                    "Cell Structure": "#74b9ff",
+                    "Cell Function": "#a29bfe",
+                    "Cell Types": "#fd79a8",
+                    "Photosynthesis": "#00b894",
+                    "Reproduction": "#00cec9",
+                    "Cellular Energy": "#fdcb6e"
+                };
+                return colors[this.category] || "#ffffff";
             }
         }
-
-        // Game state
-        let player;
-        let currentEnemy = null;
-        let currentQuestion = null;
-        let selectedAnswer = null;
 
         // Locations with their categories
         const locations = [
@@ -644,6 +1095,12 @@
             "Cellular Energy": ["ATP Drainer", "Mitochondrial Virus", "Energy Vampire"]
         };
 
+        // Game state
+        let player;
+        let currentEnemy = null;
+        let currentQuestion = null;
+        let selectedAnswer = null;
+
         // DOM helper functions
         function logMessage(message) {
             const battleLog = document.getElementById('battle-log');
@@ -686,6 +1143,30 @@
                 <div id="battle-log" class="battle-log"></div>
             `;
             document.getElementById('game-screen').innerHTML = html;
+        }
+
+        // Overlay functions
+        function showKnowledgeOverlay() {
+            const overlay = document.getElementById('knowledge-overlay');
+            const display = document.getElementById('knowledge-display');
+            
+            let html = '';
+            for (const [category, level] of Object.entries(player.knowledge)) {
+                html += `
+                    <div class="knowledge-item">
+                        <div>${category}</div>
+                        <div class="knowledge-stars">${"★".repeat(level)}${"☆".repeat(5-level)}</div>
+                        <div>Level ${level}</div>
+                    </div>
+                `;
+            }
+            
+            display.innerHTML = html;
+            overlay.style.display = 'flex';
+        }
+
+        function closeOverlay() {
+            document.getElementById('knowledge-overlay').style.display = 'none';
         }
 
         // Game functions
