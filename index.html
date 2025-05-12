@@ -171,20 +171,22 @@
         let currentSpell = null;
         let mathAnswer = null;
 
-        // DOM elements
-        const gameScreen = document.getElementById('game-screen');
-        const welcomeScreen = document.getElementById('welcome-screen');
-
         // Helper functions
         function logMessage(message) {
-            const log = document.createElement('div');
-            log.innerHTML = message;
-            document.getElementById('battle-log').appendChild(log);
-            document.getElementById('battle-log').scrollTop = document.getElementById('battle-log').scrollHeight;
+            const battleLog = document.getElementById('battle-log');
+            if (battleLog) {
+                const log = document.createElement('div');
+                log.innerHTML = message;
+                battleLog.appendChild(log);
+                battleLog.scrollTop = battleLog.scrollHeight;
+            }
         }
 
         function clearScreen() {
-            gameScreen.innerHTML = '';
+            const gameScreen = document.getElementById('game-screen');
+            if (gameScreen) {
+                gameScreen.innerHTML = '';
+            }
         }
 
         function showMainMenu() {
@@ -196,7 +198,7 @@
                 <button onclick="rest()">Rest (heal to full HP)</button>
                 <div id="battle-log" class="battle-log"></div>
             `;
-            gameScreen.innerHTML = html;
+            document.getElementById('game-screen').innerHTML = html;
         }
 
         function generateMathProblem(difficulty) {
@@ -297,7 +299,7 @@
                     <button onclick="checkMathAnswer()">Submit</button>
                 </div>
             `;
-            gameScreen.innerHTML = html;
+            document.getElementById('game-screen').innerHTML = html;
         }
 
         function showSpells() {
@@ -314,7 +316,7 @@
             
             const container = document.createElement('div');
             container.innerHTML = html;
-            gameScreen.appendChild(container);
+            document.getElementById('game-screen').appendChild(container);
         }
 
         function selectSpell(spell) {
@@ -405,7 +407,7 @@
 
         function gameOver() {
             clearScreen();
-            gameScreen.innerHTML = `
+            document.getElementById('game-screen').innerHTML = `
                 <h2>Game Over!</h2>
                 <p>Better luck next time, ${player.name}!</p>
                 <button onclick="resetGame()">Play Again</button>
