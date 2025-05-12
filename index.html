@@ -1,30 +1,423 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Python Math RPG in Browser</title>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+    <title>Math RPG Game</title>
     <style>
-        /* Add similar styles as the JavaScript version */
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        .game-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .battle-log {
+            height: 200px;
+            overflow-y: scroll;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .stats {
+            background-color: #e9f7ef;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        input {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
     </style>
 </head>
 <body>
-    <div id="game-container"></div>
+    <div class="game-container">
+        <h1>Math RPG Game</h1>
+        <div id="game-screen">
+            <div id="welcome-screen">
+                <h2>Welcome to Math Quest!</h2>
+                <p>Enter your wizard's name:</p>
+                <input type="text" id="player-name" placeholder="Wizard Name">
+                <button onclick="startGame()">Begin Adventure</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        async function main() {
-            let pyodide = await loadPyodide();
-            
-            // Load your Python code
-            await pyodide.loadPackage("micropip");
-            await pyodide.runPythonAsync(`
-                import micropip
-                await micropip.install(['pyodide-http'])
-            `);
-            
-            // Here you would add your Python game code
-            // Then create an interface between Python and JavaScript
+        // Game classes
+        class Player {
+            constructor(name) {
+                this.name = name;
+                this.level = 1;
+                this.hp = 50;
+                this.max_hp = 50;
+                this.exp = 0;
+                this.exp_to_level = 100;
+                this.spells = {
+                    "Fireball": {damage: 10, difficulty: "easy"},
+                    "Ice Shard": {damage: 15, difficulty: "medium"},
+                    "Lightning Bolt": {damage: 20, difficulty: "hard"}
+                };
+            }
+
+            levelUp() {
+                this.level += 1;
+                this.max_hp += 20;
+                this.hp = this.max_hp;
+                this.exp -= this.exp_to_level;
+                this.exp_to_level = Math.floor(this.exp_to_level * 1.5);
+                logMessage(`🌟 ${this.name} leveled up to Level ${this.level}! 🌟`);
+                logMessage(`Max HP increased to ${this.max_hp}!`);
+            }
+
+            heal(amount) {
+                this.hp = Math.min(this.hp + amount, this.max_hp);
+                logMessage(`You healed for ${amount} HP! Current HP: ${this.hp}/${this.max_hp}`);
+            }
+
+            takeDamage(damage) {
+                this.hp -= damage;
+                if (this.hp <= 0) {
+                    logMessage(`💀 ${this.name} has been defeated! 💀`);
+                    return true;
+                }
+                logMessage(`You took ${damage} damage! HP: ${this.hp}/${this.max_hp}`);
+                return false;
+            }
+
+            gainExp(amount) {
+                this.exp += amount;
+                logMessage(`You gained ${amount} EXP!`);
+                if (this.exp >= this.exp_to_level) {
+                    this.levelUp();
+                }
+            }
+
+            displayStats() {
+                let stats = `=== ${this.name} ===<br>`;
+                stats += `Level: ${this.level}<br>`;
+                stats += `HP: ${this.hp}/${this.max_hp}<br>`;
+                stats += `EXP: ${this.exp}/${this.exp_to_level}<br>`;
+                stats += `Spells:<br>`;
+                for (const [spell, details] of Object.entries(this.spells)) {
+                    stats += `- ${spell}: ${details.damage} damage (${details.difficulty} math)<br>`;
+                }
+                return stats;
+            }
         }
-        
-        main();
+
+        class Monster {
+            constructor(name, level) {
+                this.name = name;
+                this.level = level;
+                this.hp = 30 + (level * 10);
+                this.max_hp = this.hp;
+                this.damage = 5 + (level * 2);
+            }
+
+            takeDamage(damage) {
+                this.hp -= damage;
+                if (this.hp <= 0) {
+                    logMessage(`💀 ${this.name} has been defeated! 💀`);
+                    return true;
+                }
+                logMessage(`${this.name} took ${damage} damage! HP: ${this.hp}/${this.max_hp}`);
+                return false;
+            }
+
+            attack(player) {
+                logMessage(`${this.name} attacks you!`);
+                return player.takeDamage(this.damage);
+            }
+
+            displayStats() {
+                let stats = `=== ${this.name} ===<br>`;
+                stats += `Level: ${this.level}<br>`;
+                stats += `HP: ${this.hp}/${this.max_hp}<br>`;
+                stats += `Damage: ${this.damage}<br>`;
+                return stats;
+            }
+        }
+
+        // Game state
+        let player;
+        let currentMonster = null;
+        let currentSpell = null;
+        let mathAnswer = null;
+
+        // DOM elements
+        const gameScreen = document.getElementById('game-screen');
+        const welcomeScreen = document.getElementById('welcome-screen');
+
+        // Helper functions
+        function logMessage(message) {
+            const log = document.createElement('div');
+            log.innerHTML = message;
+            document.getElementById('battle-log').appendChild(log);
+            document.getElementById('battle-log').scrollTop = document.getElementById('battle-log').scrollHeight;
+        }
+
+        function clearScreen() {
+            gameScreen.innerHTML = '';
+        }
+
+        function showMainMenu() {
+            clearScreen();
+            const html = `
+                <div class="stats">${player.displayStats()}</div>
+                <h2>What would you like to do?</h2>
+                <button onclick="explore()">Explore</button>
+                <button onclick="rest()">Rest (heal to full HP)</button>
+                <div id="battle-log" class="battle-log"></div>
+            `;
+            gameScreen.innerHTML = html;
+        }
+
+        function generateMathProblem(difficulty) {
+            let a, b, op;
+            if (difficulty === "easy") {
+                a = Math.floor(Math.random() * 10) + 1;
+                b = Math.floor(Math.random() * 10) + 1;
+                op = Math.random() < 0.5 ? '+' : '-';
+            } else if (difficulty === "medium") {
+                a = Math.floor(Math.random() * 11) + 5;
+                b = Math.floor(Math.random() * 11) + 5;
+                const ops = ['+', '-', '*'];
+                op = ops[Math.floor(Math.random() * ops.length)];
+            } else { // hard
+                a = Math.floor(Math.random() * 11) + 10;
+                b = Math.floor(Math.random() * 10) + 1;
+                op = Math.random() < 0.5 ? '*' : '/';
+            }
+
+            let problem;
+            let answer;
+            
+            if (op === '/') {
+                // For division, make sure it divides evenly
+                answer = Math.floor(Math.random() * 5) + 1;
+                b = a * answer;
+                problem = `${b} / ${a}`;
+                answer = answer; // b / a = answer
+            } else {
+                problem = `${a} ${op} ${b}`;
+                answer = eval(problem);
+            }
+
+            return { problem, answer };
+        }
+
+        // Game functions
+        function startGame() {
+            const name = document.getElementById('player-name').value.trim();
+            if (!name) {
+                alert("Please enter a name!");
+                return;
+            }
+            player = new Player(name);
+            logMessage(`Welcome, ${name}! Let the adventure begin!`);
+            showMainMenu();
+        }
+
+        function explore() {
+            const locations = [
+                "Enchanted Forest",
+                "Mystic Mountains",
+                "Ancient Ruins",
+                "Dragon's Valley",
+                "Wizard's Tower"
+            ];
+            
+            const currentLocation = locations[Math.floor(Math.random() * locations.length)];
+            logMessage(`You are exploring ${currentLocation}...`);
+            
+            // Random events
+            const event = Math.random();
+            
+            if (event < 0.6) { // 60% chance of battle
+                const monsterLevel = Math.max(1, player.level + Math.floor(Math.random() * 3) - 1);
+                const monsters = [
+                    "Goblin", "Skeleton", "Slime", "Wolf", "Orc",
+                    "Troll", "Dragonling", "Ghost", "Spider", "Bat"
+                ];
+                const monsterName = monsters[Math.floor(Math.random() * monsters.length)];
+                currentMonster = new Monster(monsterName, monsterLevel);
+                startBattle();
+            } else if (event < 0.8) { // 20% chance to find health potion
+                logMessage("You found a health potion! +20 HP");
+                player.heal(20);
+                showMainMenu();
+            } else { // 20% chance nothing happens
+                logMessage("You explore the area but find nothing of interest.");
+                showMainMenu();
+            }
+        }
+
+        function startBattle() {
+            clearScreen();
+            logMessage(`⚔️ A wild ${currentMonster.name} (Level ${currentMonster.level}) appears! ⚔️`);
+            
+            const html = `
+                <div class="stats">${player.displayStats()}</div>
+                <div>${currentMonster.displayStats()}</div>
+                <h3>What will you do?</h3>
+                <button onclick="showSpells()">Attack with spell</button>
+                <button onclick="usePotion()">Use health potion (heals 20 HP)</button>
+                <button onclick="tryFlee()">Try to flee</button>
+                <div id="battle-log" class="battle-log"></div>
+                <div id="math-problem-container" style="display: none;">
+                    <h3 id="math-problem-text"></h3>
+                    <input type="number" id="math-answer" placeholder="Your answer">
+                    <button onclick="checkMathAnswer()">Submit</button>
+                </div>
+            `;
+            gameScreen.innerHTML = html;
+        }
+
+        function showSpells() {
+            document.getElementById('math-problem-container').style.display = 'block';
+            const spells = Object.keys(player.spells);
+            const spellButtons = spells.map((spell, index) => 
+                `<button onclick="selectSpell('${spell}')">${spell} (${player.spells[spell].difficulty} math)</button>`
+            ).join('');
+            
+            const html = `
+                <h3>Choose a spell:</h3>
+                ${spellButtons}
+            `;
+            
+            const container = document.createElement('div');
+            container.innerHTML = html;
+            gameScreen.appendChild(container);
+        }
+
+        function selectSpell(spell) {
+            currentSpell = spell;
+            const difficulty = player.spells[spell].difficulty;
+            const { problem, answer } = generateMathProblem(difficulty);
+            mathAnswer = answer;
+            
+            document.getElementById('math-problem-text').textContent = 
+                `Solve this math problem to cast ${spell}: What is ${problem}?`;
+            document.getElementById('math-answer').value = '';
+            document.getElementById('math-answer').focus();
+        }
+
+        function checkMathAnswer() {
+            const userAnswer = parseInt(document.getElementById('math-answer').value);
+            
+            if (isNaN(userAnswer)) {
+                logMessage("Please enter a valid number!");
+                return;
+            }
+            
+            if (userAnswer === mathAnswer) {
+                const damage = player.spells[currentSpell].damage;
+                logMessage(`✨ ${currentSpell} hits ${currentMonster.name} for ${damage} damage! ✨`);
+                
+                if (currentMonster.takeDamage(damage)) {
+                    const expGain = currentMonster.level * 20;
+                    player.gainExp(expGain);
+                    currentMonster = null;
+                    setTimeout(showMainMenu, 1500);
+                    return;
+                }
+            } else {
+                logMessage(`❌ Incorrect! The answer was ${mathAnswer}. Your spell fizzles!`);
+            }
+            
+            // Monster's turn if it's still alive
+            if (currentMonster && currentMonster.hp > 0) {
+                setTimeout(() => {
+                    if (currentMonster.attack(player)) {
+                        gameOver();
+                    } else {
+                        startBattle();
+                    }
+                }, 1000);
+            }
+        }
+
+        function usePotion() {
+            player.heal(20);
+            
+            // Monster's turn
+            if (currentMonster.hp > 0) {
+                setTimeout(() => {
+                    if (currentMonster.attack(player)) {
+                        gameOver();
+                    } else {
+                        startBattle();
+                    }
+                }, 1000);
+            }
+        }
+
+        function tryFlee() {
+            if (Math.random() < 0.5) {
+                logMessage("You successfully fled from battle!");
+                currentMonster = null;
+                showMainMenu();
+            } else {
+                logMessage("You failed to flee!");
+                
+                // Monster's turn
+                setTimeout(() => {
+                    if (currentMonster.attack(player)) {
+                        gameOver();
+                    } else {
+                        startBattle();
+                    }
+                }, 1000);
+            }
+        }
+
+        function rest() {
+            player.heal(player.max_hp - player.hp);
+            showMainMenu();
+        }
+
+        function gameOver() {
+            clearScreen();
+            gameScreen.innerHTML = `
+                <h2>Game Over!</h2>
+                <p>Better luck next time, ${player.name}!</p>
+                <button onclick="resetGame()">Play Again</button>
+            `;
+        }
+
+        function resetGame() {
+            const name = player.name;
+            player = new Player(name);
+            logMessage(`Welcome back, ${name}! Let the adventure begin!`);
+            showMainMenu();
+        }
     </script>
 </body>
 </html>
