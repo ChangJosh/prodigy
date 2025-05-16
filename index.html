@@ -198,6 +198,16 @@
         }
         
         /* Battle Screen */
+        #battle-screen .screen-content {
+            justify-content: flex-start;
+            gap: 10px;
+        }
+        
+        .battle-header {
+            width: 100%;
+            text-align: center;
+        }
+        
         .battle-stats {
             display: flex;
             flex-wrap: wrap;
@@ -220,11 +230,32 @@
             margin-bottom: 5px;
         }
         
+        .health-bar-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .health-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), #55efc4);
+            width: 100%;
+            transition: width 0.5s ease;
+        }
+        
+        .enemy-health-bar {
+            background: linear-gradient(90deg, var(--danger), #ff7675);
+        }
+        
         .question-container {
             background: rgba(0,0,0,0.3);
             padding: 15px;
             border-radius: 10px;
             width: 100%;
+            margin-top: 10px;
         }
         
         .question-text {
@@ -268,6 +299,35 @@
         .option.incorrect {
             background: rgba(214, 48, 49, 0.2);
             border: 1px solid var(--danger);
+        }
+        
+        /* Damage animations */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        @keyframes takeDamage {
+            0% { background-color: rgba(214, 48, 49, 0.7); }
+            100% { background-color: transparent; }
+        }
+        
+        @keyframes dealDamage {
+            0% { background-color: rgba(0, 184, 148, 0.7); }
+            100% { background-color: transparent; }
+        }
+        
+        .shake {
+            animation: shake 0.4s ease;
+        }
+        
+        .player-damage {
+            animation: takeDamage 0.5s ease;
+        }
+        
+        .enemy-damage {
+            animation: dealDamage 0.5s ease;
         }
         
         /* Location Screen */
@@ -407,7 +467,9 @@
         <!-- Battle Screen -->
         <div id="battle-screen" class="screen">
             <div class="screen-content">
-                <h1 id="enemy-name">Battle</h1>
+                <div class="battle-header">
+                    <h1 id="enemy-name">Battle</h1>
+                </div>
                 
                 <div class="media-container">
                     <video autoplay loop muted playsinline id="enemy-video">
@@ -419,10 +481,16 @@
                     <div class="battle-stat">
                         <h3>You</h3>
                         <div id="battle-player-hp">HP: 80/80</div>
+                        <div class="health-bar-container">
+                            <div class="health-bar" id="player-health-bar"></div>
+                        </div>
                     </div>
                     <div class="battle-stat">
                         <h3 id="enemy-title">Enemy</h3>
                         <div id="enemy-hp">HP: 50/50</div>
+                        <div class="health-bar-container">
+                            <div class="health-bar enemy-health-bar" id="enemy-health-bar"></div>
+                        </div>
                     </div>
                 </div>
                 
@@ -493,7 +561,6 @@
     <script>
         // Game data
         const biologyQuestions = [
-            // ... (same questions array as before)
             {
                 question: "What is the main function of the nucleus?",
                 options: [
@@ -516,7 +583,94 @@
                 answer: 1,
                 category: "Cell Structure"
             },
-            // Add more questions as needed...
+            {
+                question: "What is the powerhouse of the cell?",
+                options: [
+                    "Nucleus",
+                    "Mitochondria",
+                    "Endoplasmic reticulum",
+                    "Golgi apparatus"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which organelle contains digestive enzymes?",
+                options: [
+                    "Ribosome",
+                    "Lysosome",
+                    "Vacuole",
+                    "Chloroplast"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "What is the function of the cell membrane?",
+                options: [
+                    "Control center of the cell",
+                    "Site of protein synthesis",
+                    "Regulate what enters and leaves the cell",
+                    "Store genetic information"
+                ],
+                answer: 2,
+                category: "Cell Structure"
+            },
+            {
+                question: "What process do cells use to divide?",
+                options: [
+                    "Photosynthesis",
+                    "Respiration",
+                    "Mitosis",
+                    "Osmosis"
+                ],
+                answer: 2,
+                category: "Cell Function"
+            },
+            {
+                question: "What is the primary function of ATP in cells?",
+                options: [
+                    "Store genetic information",
+                    "Provide energy for cellular processes",
+                    "Build cell membranes",
+                    "Transport oxygen"
+                ],
+                answer: 1,
+                category: "Cellular Energy"
+            },
+            {
+                question: "Which process converts glucose into ATP?",
+                options: [
+                    "Photosynthesis",
+                    "Cellular respiration",
+                    "Protein synthesis",
+                    "DNA replication"
+                ],
+                answer: 1,
+                category: "Cellular Energy"
+            },
+            {
+                question: "What is the function of ribosomes?",
+                options: [
+                    "Energy production",
+                    "Protein synthesis",
+                    "Cellular digestion",
+                    "DNA replication"
+                ],
+                answer: 1,
+                category: "Cell Function"
+            },
+            {
+                question: "Which organelle modifies and packages proteins?",
+                options: [
+                    "Mitochondria",
+                    "Endoplasmic reticulum",
+                    "Golgi apparatus",
+                    "Lysosome"
+                ],
+                answer: 2,
+                category: "Cell Function"
+            }
         ];
 
         const locations = [
@@ -718,6 +872,9 @@
             document.getElementById('enemy-hp').textContent = `HP: ${currentEnemy.hp}/${currentEnemy.max_hp}`;
             document.getElementById('question-text').textContent = currentQuestion.question;
             
+            // Update health bars
+            updateHealthBars();
+            
             const optionsContainer = document.getElementById('options-container');
             optionsContainer.innerHTML = '';
             
@@ -735,6 +892,14 @@
             
             document.getElementById('submit-button').disabled = true;
             showScreen('battle');
+        }
+
+        function updateHealthBars() {
+            const playerHealthPercent = (player.hp / player.max_hp) * 100;
+            const enemyHealthPercent = (currentEnemy.hp / currentEnemy.max_hp) * 100;
+            
+            document.getElementById('player-health-bar').style.width = `${playerHealthPercent}%`;
+            document.getElementById('enemy-health-bar').style.width = `${enemyHealthPercent}%`;
         }
 
         function selectAnswer(index) {
@@ -768,8 +933,16 @@
                 const damage = 8 * knowledgeBonus;
                 currentEnemy.hp -= damage;
                 
+                // Damage animation
+                const enemyContainer = document.querySelector('.battle-stat:nth-child(2)');
+                enemyContainer.classList.add('shake', 'enemy-damage');
+                setTimeout(() => {
+                    enemyContainer.classList.remove('shake', 'enemy-damage');
+                }, 500);
+                
                 if (currentEnemy.hp <= 0) {
                     currentEnemy.hp = 0;
+                    updateHealthBars();
                     document.getElementById('enemy-hp').textContent = `HP: 0/${currentEnemy.max_hp}`;
                     
                     const expGain = currentEnemy.level * 15;
@@ -801,6 +974,7 @@
                         }, 1500);
                     }
                 } else {
+                    updateHealthBars();
                     document.getElementById('enemy-hp').textContent = `HP: ${currentEnemy.hp}/${currentEnemy.max_hp}`;
                     setTimeout(() => enemyAttack(), 1500);
                 }
@@ -811,10 +985,20 @@
 
         function enemyAttack() {
             player.hp -= currentEnemy.damage;
+            
+            // Damage animation
+            const playerContainer = document.querySelector('.battle-stat:nth-child(1)');
+            playerContainer.classList.add('shake', 'player-damage');
+            setTimeout(() => {
+                playerContainer.classList.remove('shake', 'player-damage');
+            }, 500);
+            
+            updateHealthBars();
             document.getElementById('battle-player-hp').textContent = `HP: ${player.hp}/${player.max_hp}`;
             
             if (player.hp <= 0) {
                 player.hp = 0;
+                updateHealthBars();
                 setTimeout(showGameOver, 1500);
             } else {
                 // Reset for next question
