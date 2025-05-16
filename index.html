@@ -18,12 +18,13 @@
         
         body {
             font-family: 'Montserrat', sans-serif;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
             background-color: #0f0f1a;
             color: var(--light);
             line-height: 1.6;
+            height: 100vh;
+            overflow: hidden;
             background-image: 
                 radial-gradient(circle at 10% 20%, rgba(108, 92, 231, 0.1) 0%, transparent 20%),
                 radial-gradient(circle at 90% 80%, rgba(253, 121, 168, 0.1) 0%, transparent 20%);
@@ -37,6 +38,14 @@
             backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             animation: fadeIn 0.5s ease-out;
+            height: calc(100vh - 60px);
+            width: calc(100vw - 60px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            margin: 30px;
+            display: flex;
+            flex-direction: column;
         }
         
         @keyframes fadeIn {
@@ -129,7 +138,7 @@
         }
         
         .battle-log {
-            height: 200px;
+            height: 150px;
             overflow-y: scroll;
             border: 1px solid rgba(255,255,255,0.1);
             padding: 15px;
@@ -138,15 +147,17 @@
             border-radius: 8px;
             font-family: 'Source Code Pro', monospace;
             color: #dfe6e9;
+            flex-shrink: 0;
         }
         
         .stats {
             background: rgba(0,0,0,0.3);
             padding: 20px;
             border-radius: 12px;
-            margin-bottom: 25px;
+            margin-bottom: 15px;
             border: 1px solid rgba(255,255,255,0.05);
             position: relative;
+            flex-shrink: 0;
         }
         
         .stats::before {
@@ -164,12 +175,14 @@
             background: rgba(0,0,0,0.3);
             padding: 20px;
             border-radius: 12px;
-            margin: 20px 0;
+            margin: 15px 0;
             border-left: 4px solid var(--primary);
+            flex-grow: 1;
+            overflow-y: auto;
         }
         
         .options {
-            margin: 20px 0;
+            margin: 15px 0;
         }
         
         .option {
@@ -205,29 +218,31 @@
         
         .location-image {
             width: 100%;
-            max-height: 300px;
+            max-height: 200px;
             object-fit: cover;
-            margin: 20px 0;
+            margin: 15px 0;
             border-radius: 12px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.3);
             border: 2px solid rgba(255,255,255,0.1);
+            flex-shrink: 0;
         }
         
         .enemy-video {
             width: 100%;
-            max-height: 250px;
+            max-height: 200px;
             border-radius: 12px;
-            margin: 20px 0;
+            margin: 15px 0;
             object-fit: cover;
             box-shadow: 0 8px 25px rgba(0,0,0,0.4);
             border: 2px solid rgba(253, 121, 168, 0.3);
+            flex-shrink: 0;
         }
         
         .progress-container {
             width: 100%;
             background: rgba(255,255,255,0.1);
             border-radius: 50px;
-            margin: 15px 0;
+            margin: 10px 0;
             height: 10px;
             overflow: hidden;
         }
@@ -295,6 +310,7 @@
             margin: 10px 0;
             transition: all 0.3s;
             border: 1px solid transparent;
+            cursor: pointer;
         }
         
         .location-card:hover {
@@ -379,14 +395,38 @@
             margin-top: 5px;
         }
         
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .screen.active {
+            display: flex;
+        }
+        
+        .content-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+        
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 10px 0;
+            flex-shrink: 0;
+        }
+        
         /* Responsive design */
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            
             .game-container {
-                padding: 20px;
+                padding: 15px;
+                margin: 15px;
+                height: calc(100vh - 30px);
+                width: calc(100vw - 30px);
             }
             
             h1 {
@@ -406,14 +446,21 @@
             .knowledge-container {
                 grid-template-columns: 1fr 1fr;
             }
+            
+            .location-image,
+            .enemy-video {
+                max-height: 150px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="game-container">
         <h1>Cell Explorer: Biology Quest</h1>
-        <div id="game-screen">
-            <div id="welcome-screen">
+        
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="screen active">
+            <div class="content-area">
                 <h2>Welcome to the Microscopic Frontier!</h2>
                 <p>As a nanobiologist, you've been miniaturized to explore the cellular world. Deadly pathogens threaten the cell - use your biology knowledge to defeat them!</p>
                 
@@ -424,7 +471,93 @@
                 
                 <p>Enter your scientist's name:</p>
                 <input type="text" id="player-name" placeholder="Dr. Lastname" style="width: 100%; padding: 12px; font-size: 16px;">
+            </div>
+            <div class="button-row">
                 <button onclick="startGame()" class="pulse">Begin Cellular Expedition</button>
+            </div>
+        </div>
+        
+        <!-- Main Menu Screen -->
+        <div id="main-menu-screen" class="screen">
+            <div class="stats" id="player-stats"></div>
+            <div class="content-area">
+                <h2 id="location-title"></h2>
+                <p id="location-description"></p>
+                
+                <video autoplay loop muted class="location-image" id="location-video">
+                    <source src="" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            <div class="button-row">
+                <button onclick="explore()">Explore</button>
+                <button onclick="rest()">Use Health Pack (+20 HP)</button>
+                <button onclick="showLocationScreen()">Travel to New Location</button>
+            </div>
+            <div id="battle-log" class="battle-log"></div>
+        </div>
+        
+        <!-- Battle Screen -->
+        <div id="battle-screen" class="screen">
+            <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+                <div class="stats" id="battle-player-stats"></div>
+                <div class="stats" id="enemy-stats"></div>
+            </div>
+            <div class="content-area">
+                <h2 id="battle-title" style="color: var(--danger);"></h2>
+                
+                <video autoplay loop muted class="enemy-video" id="enemy-video">
+                    <source src="" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                
+                <div class="question" id="battle-question">
+                    <h4 id="question-text"></h4>
+                    <div class="options" id="options-container"></div>
+                </div>
+            </div>
+            <div class="button-row">
+                <button id="submit-btn" onclick="checkAnswer()" disabled>Submit Answer</button>
+                <button onclick="tryFlee()" style="background: linear-gradient(135deg, #636e72, #b2bec3);">Retreat</button>
+            </div>
+            <div id="battle-log-2" class="battle-log"></div>
+        </div>
+        
+        <!-- Location Screen -->
+        <div id="location-screen" class="screen">
+            <div class="content-area">
+                <h2>Select Research Destination:</h2>
+                <p>Choose a new cellular location to explore. Different locations contain different types of pathogens.</p>
+                
+                <div id="location-cards"></div>
+            </div>
+            <div class="button-row">
+                <button onclick="showMainMenu()">Back to Current Location</button>
+            </div>
+        </div>
+        
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="screen">
+            <div class="content-area" style="text-align: center;">
+                <h2 style="color: var(--danger);">MISSION FAILED</h2>
+                <p id="game-over-text"></p>
+                
+                <video autoplay loop muted class="location-image" style="max-height: 200px;">
+                    <source src="https://assets.mixkit.co/videos/preview/mixkit-red-blood-cells-flowing-in-a-vein-15800-large.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                
+                <div style="background: rgba(214, 48, 49, 0.2); padding: 20px; border-radius: 12px; margin: 20px 0;">
+                    <h3>Expedition Report</h3>
+                    <p>Final Level: <strong id="final-level"></strong></p>
+                    <p>Questions Answered: <strong id="questions-answered"></strong></p>
+                    <p>Accuracy: <strong id="final-accuracy"></strong></p>
+                </div>
+                
+                <p id="performance-comment" style="color: var(--success);"></p>
+            </div>
+            <div class="button-row">
+                <button onclick="resetGame()" class="pulse">New Expedition</button>
             </div>
         </div>
     </div>
@@ -844,6 +977,94 @@
             return randomQuestion;
         }
 
+        // Locations with their categories
+        const locations = [
+            { 
+                name: "Cell Membrane", 
+                categories: ["Cell Structure"], 
+                description: "The gatekeeper of the cell, controlling what enters and exits.",
+                color: "#74b9ff",
+                video: "https://assets.mixkit.co/videos/preview/mixkit-cells-under-a-microscope-15828-large.mp4"
+            },
+            { 
+                name: "Cytoplasm", 
+                categories: ["Cell Structure", "Cell Function"], 
+                description: "The jelly-like substance where most cellular activities occur.",
+                color: "#a29bfe",
+                video: "https://assets.mixkit.co/videos/preview/mixkit-cells-under-a-microscope-15828-large.mp4"
+            },
+            { 
+                name: "Nucleus", 
+                categories: ["Cell Structure"], 
+                description: "The control center containing the cell's genetic material.",
+                color: "#fd79a8",
+                video: "https://assets.mixkit.co/videos/preview/mixkit-cells-under-a-microscope-15828-large.mp4"
+            },
+            { 
+                name: "Mitochondria", 
+                categories: ["Cell Function", "Cellular Energy"], 
+                description: "The powerhouse of the cell where ATP is produced.",
+                color: "#00b894",
+                video: "https://assets.mixkit.co/videos/preview/mixkit-cells-under-a-microscope-15828-large.mp4"
+            },
+            { 
+                name: "Chloroplast", 
+                categories: ["Photosynthesis"], 
+                description: "Where photosynthesis occurs in plant cells.",
+                color: "#00cec9",
+                video: "https://assets.mixkit.co/videos/preview/mixkit-cells-under-a-microscope-15828-large.mp4"
+            },
+            { 
+                name: "Golgi Apparatus", 
+                categories: ["Cell Function"], 
+                description: "The post office of the cell, modifying and packaging proteins.",
+                color: "#fdcb6e",
+                video: "https://assets.mixkit.co/videos/preview/mixkit-cells-under-a-microscope-15828-large.mp4"
+            },
+            { 
+                name: "Endoplasmic Reticulum", 
+                categories: ["Cell Function"], 
+                description: "The transportation network with rough and smooth regions.",
+                color: "#e17055",
+                video: "https://assets.mixkit.co/videos/preview/mixkit-cells-under-a-microscope-15828-large.mp4"
+            }
+        ];
+
+        // Enemy types by category
+        const enemyTypes = {
+            "Cell Structure": ["Misfolded Protein", "Viral Invader", "Damaged Organelle"],
+            "Cell Function": ["Toxic Metabolite", "Energy Parasite", "Dysfunctional Enzyme"],
+            "Cell Types": ["Mutated Cell", "Aggressive Microbe", "Hostile Prokaryote"],
+            "Photosynthesis": ["Light Blocker", "Chlorophyll Eater", "Oxygen Thief"],
+            "Reproduction": ["DNA Breaker", "Mutagen", "Cell Division Disruptor"],
+            "Cellular Energy": ["ATP Drainer", "Mitochondrial Virus", "Energy Vampire"]
+        };
+
+        // Game state
+        let player;
+        let currentEnemy = null;
+        let currentQuestion = null;
+        let selectedAnswer = null;
+
+        // DOM helper functions
+        function logMessage(message, screen = "main") {
+            const battleLog = document.getElementById(screen === "battle" ? "battle-log-2" : "battle-log");
+            if (battleLog) {
+                const log = document.createElement('div');
+                log.innerHTML = message;
+                log.className = 'fade-in';
+                battleLog.appendChild(log);
+                battleLog.scrollTop = battleLog.scrollHeight;
+            }
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
         // Game classes
         class Player {
             constructor(name) {
@@ -993,10 +1214,10 @@
             takeDamage(damage) {
                 this.hp -= damage;
                 if (this.hp <= 0) {
-                    logMessage(`<span style="color: var(--success);">💀 ${this.name} has been defeated! 💀</span>`);
+                    logMessage(`<span style="color: var(--success);">💀 ${this.name} has been defeated! 💀</span>`, "battle");
                     return true;
                 }
-                logMessage(`<span style="color: var(--accent);">⚡ ${this.name} took ${damage} damage! HP: ${this.hp}/${this.max_hp}</span>`);
+                logMessage(`<span style="color: var(--accent);">⚡ ${this.name} took ${damage} damage! HP: ${this.hp}/${this.max_hp}</span>`, "battle");
                 
                 // Shake animation
                 const video = document.querySelector('.enemy-video');
@@ -1009,7 +1230,7 @@
             }
 
             attack(player) {
-                logMessage(`<span style="color: var(--danger);">☠️ ${this.name} attacks you with a ${this.category} question!</span>`);
+                logMessage(`<span style="color: var(--danger);">☠️ ${this.name} attacks you with a ${this.category} question!</span>`, "battle");
                 return player.takeDamage(this.damage);
             }
 
@@ -1037,112 +1258,6 @@
                 };
                 return colors[this.category] || "#ffffff";
             }
-        }
-
-        // Locations with their categories
-        const locations = [
-            { 
-                name: "Cell Membrane", 
-                categories: ["Cell Structure"], 
-                description: "The gatekeeper of the cell, controlling what enters and exits.",
-                color: "#74b9ff"
-            },
-            { 
-                name: "Cytoplasm", 
-                categories: ["Cell Structure", "Cell Function"], 
-                description: "The jelly-like substance where most cellular activities occur.",
-                color: "#a29bfe"
-            },
-            { 
-                name: "Nucleus", 
-                categories: ["Cell Structure"], 
-                description: "The control center containing the cell's genetic material.",
-                color: "#fd79a8"
-            },
-            { 
-                name: "Mitochondria", 
-                categories: ["Cell Function", "Cellular Energy"], 
-                description: "The powerhouse of the cell where ATP is produced.",
-                color: "#00b894"
-            },
-            { 
-                name: "Chloroplast", 
-                categories: ["Photosynthesis"], 
-                description: "Where photosynthesis occurs in plant cells.",
-                color: "#00cec9"
-            },
-            { 
-                name: "Golgi Apparatus", 
-                categories: ["Cell Function"], 
-                description: "The post office of the cell, modifying and packaging proteins.",
-                color: "#fdcb6e"
-            },
-            { 
-                name: "Endoplasmic Reticulum", 
-                categories: ["Cell Function"], 
-                description: "The transportation network with rough and smooth regions.",
-                color: "#e17055"
-            }
-        ];
-
-        // Enemy types by category
-        const enemyTypes = {
-            "Cell Structure": ["Misfolded Protein", "Viral Invader", "Damaged Organelle"],
-            "Cell Function": ["Toxic Metabolite", "Energy Parasite", "Dysfunctional Enzyme"],
-            "Cell Types": ["Mutated Cell", "Aggressive Microbe", "Hostile Prokaryote"],
-            "Photosynthesis": ["Light Blocker", "Chlorophyll Eater", "Oxygen Thief"],
-            "Reproduction": ["DNA Breaker", "Mutagen", "Cell Division Disruptor"],
-            "Cellular Energy": ["ATP Drainer", "Mitochondrial Virus", "Energy Vampire"]
-        };
-
-        // Game state
-        let player;
-        let currentEnemy = null;
-        let currentQuestion = null;
-        let selectedAnswer = null;
-
-        // DOM helper functions
-        function logMessage(message) {
-            const battleLog = document.getElementById('battle-log');
-            if (battleLog) {
-                const log = document.createElement('div');
-                log.innerHTML = message;
-                log.className = 'fade-in';
-                battleLog.appendChild(log);
-                battleLog.scrollTop = battleLog.scrollHeight;
-            }
-        }
-
-        function clearScreen() {
-            const gameScreen = document.getElementById('game-screen');
-            if (gameScreen) {
-                gameScreen.innerHTML = '';
-            }
-        }
-
-        function showMainMenu() {
-            clearScreen();
-            
-            const location = locations.find(loc => loc.name === player.location);
-            const html = `
-                <div class="stats">${player.displayStats()}</div>
-                
-                <h2 style="color: ${location.color};">Current Location: ${location.name}</h2>
-                <p>${location.description}</p>
-                
-                <video autoplay loop muted class="location-image">
-                    <source src="https://assets.mixkit.co/videos/preview/mixkit-cells-under-a-microscope-15828-large.mp4" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-                
-                <h3>Research Actions:</h3>
-                <button onclick="explore()">Explore ${location.name}</button>
-                <button onclick="rest()">Use Health Pack (+20 HP)</button>
-                <button onclick="moveLocation()">Travel to New Location</button>
-                
-                <div id="battle-log" class="battle-log"></div>
-            `;
-            document.getElementById('game-screen').innerHTML = html;
         }
 
         // Overlay functions
@@ -1182,6 +1297,21 @@
             showMainMenu();
         }
 
+        function showMainMenu() {
+            const location = locations.find(loc => loc.name === player.location);
+            
+            document.getElementById('player-stats').innerHTML = player.displayStats();
+            document.getElementById('location-title').textContent = `Current Location: ${location.name}`;
+            document.getElementById('location-title').style.color = location.color;
+            document.getElementById('location-description').textContent = location.description;
+            
+            const video = document.getElementById('location-video');
+            video.querySelector('source').src = location.video;
+            video.load();
+            
+            showScreen('main-menu-screen');
+        }
+
         function explore() {
             const location = locations.find(loc => loc.name === player.location);
             logMessage(`<span style="color: ${location.color};">🌐 Exploring the ${player.location}...</span>`);
@@ -1207,51 +1337,32 @@
             } else if (event < 0.9) { // 20% chance to find health pack
                 logMessage(`<span style="color: var(--success);">⚕️ You found a health pack! +20 HP</span>`);
                 player.heal(20);
-                showMainMenu();
             } else { // 10% chance nothing happens
                 logMessage(`<span style="color: ${location.color};">🔍 You carefully examine the ${player.location} but find nothing unusual.</span>`);
-                showMainMenu();
             }
         }
 
         function startBattle() {
-            clearScreen();
-            
             currentQuestion = currentEnemy.getQuestion();
-            const location = locations.find(loc => loc.name === player.location);
             
-            const html = `
-                <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-                    <div class="stats" style="flex: 1;">${player.displayStats()}</div>
-                    <div class="stats" style="flex: 1;">${currentEnemy.displayStats()}</div>
+            document.getElementById('battle-player-stats').innerHTML = player.displayStats();
+            document.getElementById('enemy-stats').innerHTML = currentEnemy.displayStats();
+            document.getElementById('battle-title').textContent = `BATTLE: ${currentEnemy.name}`;
+            document.getElementById('question-text').textContent = currentQuestion.question;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = currentQuestion.options.map((option, index) => `
+                <div class="option" onclick="selectAnswer(${index})">
+                    ${String.fromCharCode(65 + index)}) ${option}
                 </div>
-                
-                <h2 style="color: var(--danger);">BATTLE: ${currentEnemy.name}</h2>
-                
-                <video autoplay loop muted class="enemy-video">
-                    <source src="${currentEnemy.videoUrl}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-                
-                <div class="question">
-                    <h4>${currentQuestion.question}</h4>
-                    <div class="options" id="options-container">
-                        ${currentQuestion.options.map((option, index) => `
-                            <div class="option" onclick="selectAnswer(${index})">
-                                ${String.fromCharCode(65 + index)}) ${option}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-                
-                <div style="display: flex; gap: 10px;">
-                    <button id="submit-btn" onclick="checkAnswer()" disabled>Submit Answer</button>
-                    <button onclick="tryFlee()" style="background: linear-gradient(135deg, #636e72, #b2bec3);">Retreat</button>
-                </div>
-                
-                <div id="battle-log" class="battle-log"></div>
-            `;
-            document.getElementById('game-screen').innerHTML = html;
+            `).join('');
+            
+            const video = document.getElementById('enemy-video');
+            video.querySelector('source').src = currentEnemy.videoUrl;
+            video.load();
+            
+            document.getElementById('submit-btn').disabled = true;
+            showScreen('battle-screen');
         }
 
         function selectAnswer(index) {
@@ -1293,7 +1404,7 @@
                 const knowledgeBonus = player.knowledge[currentQuestion.category] || 1;
                 const damage = 10 * knowledgeBonus;
                 
-                logMessage(`<span style="color: var(--success);">✅ Correct! Your ${currentQuestion.category} knowledge dealt ${damage} damage!</span>`);
+                logMessage(`<span style="color: var(--success);">✅ Correct! Your ${currentQuestion.category} knowledge dealt ${damage} damage!</span>`, "battle");
                 
                 if (currentEnemy.takeDamage(damage)) {
                     const expGain = currentEnemy.level * 20;
@@ -1303,7 +1414,7 @@
                     return;
                 }
             } else {
-                logMessage(`<span style="color: var(--danger);">❌ Incorrect! The correct answer was ${String.fromCharCode(65 + currentQuestion.answer)}.</span>`);
+                logMessage(`<span style="color: var(--danger);">❌ Incorrect! The correct answer was ${String.fromCharCode(65 + currentQuestion.answer)}.</span>`, "battle");
             }
             
             // Enemy's turn if it's still alive
@@ -1320,11 +1431,11 @@
 
         function tryFlee() {
             if (Math.random() < 0.5) {
-                logMessage(`<span style="color: var(--info);">🏃‍♂️ You successfully retreated from the ${currentEnemy.name}!</span>`);
+                logMessage(`<span style="color: var(--info);">🏃‍♂️ You successfully retreated from the ${currentEnemy.name}!</span>`, "battle");
                 currentEnemy = null;
                 showMainMenu();
             } else {
-                logMessage(`<span style="color: var(--danger);">⚠️ Escape failed! The ${currentEnemy.name} blocks your path!</span>`);
+                logMessage(`<span style="color: var(--danger);">⚠️ Escape failed! The ${currentEnemy.name} blocks your path!</span>`, "battle");
                 
                 // Enemy's turn
                 setTimeout(() => {
@@ -1337,28 +1448,21 @@
             }
         }
 
-        function moveLocation() {
-            clearScreen();
-            
-            const html = `
-                <h2>Select Research Destination:</h2>
-                <p>Choose a new cellular location to explore. Different locations contain different types of pathogens.</p>
-                
-                ${locations.map(loc => `
-                    <div class="location-card" onclick="changeLocation('${loc.name}')">
-                        <h3 style="color: ${loc.color};">${loc.name}</h3>
-                        <p>${loc.description}</p>
-                        <div>
-                            ${loc.categories.map(cat => 
-                                `<span class="location-category">${cat}</span>`
-                            ).join('')}
-                        </div>
+        function showLocationScreen() {
+            const locationCards = document.getElementById('location-cards');
+            locationCards.innerHTML = locations.map(loc => `
+                <div class="location-card" onclick="changeLocation('${loc.name}')">
+                    <h3 style="color: ${loc.color};">${loc.name}</h3>
+                    <p>${loc.description}</p>
+                    <div>
+                        ${loc.categories.map(cat => 
+                            `<span class="location-category">${cat}</span>`
+                        ).join('')}
                     </div>
-                `).join('')}
-                
-                <button onclick="showMainMenu()">Back to Current Location</button>
-            `;
-            document.getElementById('game-screen').innerHTML = html;
+                </div>
+            `).join('');
+            
+            showScreen('location-screen');
         }
 
         function changeLocation(locationName) {
@@ -1368,42 +1472,31 @@
         }
 
         function rest() {
-            player.heal(player.max_hp - player.hp);
-            showMainMenu();
+            player.heal(20);
         }
 
         function gameOver() {
-            clearScreen();
             const accuracy = player.getAccuracy();
             
-            const html = `
-                <div style="text-align: center;">
-                    <h2 style="color: var(--danger);">MISSION FAILED</h2>
-                    <p>Your cellular exploration has ended, Dr. ${player.name}.</p>
-                    
-                    <video autoplay loop muted class="location-image" style="max-height: 200px;">
-                        <source src="https://assets.mixkit.co/videos/preview/mixkit-red-blood-cells-flowing-in-a-vein-15800-large.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                    
-                    <div style="background: rgba(214, 48, 49, 0.2); padding: 20px; border-radius: 12px; margin: 20px 0;">
-                        <h3>Expedition Report</h3>
-                        <p>Final Level: <strong>${player.level}</strong></p>
-                        <p>Questions Answered: <strong>${player.questionsAnswered}</strong></p>
-                        <p>Accuracy: <strong>${accuracy}%</strong></p>
-                    </div>
-                    
-                    ${accuracy > 80 ? 
-                        `<p style="color: var(--success);">🏆 Outstanding performance! Your biology expertise is remarkable!</p>` : ''}
-                    ${accuracy > 60 ? 
-                        `<p style="color: var(--warning);">👍 Solid work! With more study, you'll master cellular biology!</p>` : ''}
-                    ${accuracy <= 60 ? 
-                        `<p style="color: var(--info);">📚 Review your biology concepts and try again!</p>` : ''}
-                    
-                    <button onclick="resetGame()" class="pulse">New Expedition</button>
-                </div>
-            `;
-            document.getElementById('game-screen').innerHTML = html;
+            document.getElementById('game-over-text').textContent = `Your cellular exploration has ended, Dr. ${player.name}.`;
+            document.getElementById('final-level').textContent = player.level;
+            document.getElementById('questions-answered').textContent = player.questionsAnswered;
+            document.getElementById('final-accuracy').textContent = `${accuracy}%`;
+            
+            let comment = "";
+            if (accuracy > 80) {
+                comment = "🏆 Outstanding performance! Your biology expertise is remarkable!";
+                document.getElementById('performance-comment').style.color = "var(--success)";
+            } else if (accuracy > 60) {
+                comment = "👍 Solid work! With more study, you'll master cellular biology!";
+                document.getElementById('performance-comment').style.color = "var(--warning)";
+            } else {
+                comment = "📚 Review your biology concepts and try again!";
+                document.getElementById('performance-comment').style.color = "var(--info)";
+            }
+            document.getElementById('performance-comment').textContent = comment;
+            
+            showScreen('game-over-screen');
         }
 
         function resetGame() {
