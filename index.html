@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Cell Explorer: Biology Quest</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -20,75 +21,85 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            touch-action: manipulation;
         }
         
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: #0f0f1a;
             color: var(--light);
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
             background-image: 
                 radial-gradient(circle at 10% 20%, rgba(108, 92, 231, 0.1) 0%, transparent 20%),
                 radial-gradient(circle at 90% 80%, rgba(253, 121, 168, 0.1) 0%, transparent 20%);
         }
         
         #game-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 20px;
-            background-color: rgba(45, 52, 54, 0.9);
+            padding: 15px;
+            max-width: 100%;
+            margin: 0 auto;
+            width: 100%;
+            height: 100%;
         }
         
         .screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            opacity: 0;
-            pointer-events: none;
+            right: 0;
+            bottom: 0;
+            padding: 15px;
             transition: opacity 0.3s ease;
-            overflow: hidden;
         }
         
         .screen.active {
             opacity: 1;
             pointer-events: all;
+            position: relative;
         }
         
         .screen-content {
-            width: 100%;
-            max-width: 800px;
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
-            flex-grow: 1;
             justify-content: center;
+            width: 100%;
+            gap: 15px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         .screen-footer {
             width: 100%;
-            max-width: 800px;
             display: flex;
             flex-direction: column;
             gap: 10px;
+            padding-top: 15px;
         }
         
         h1 {
-            font-size: 2.5rem;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
             background: linear-gradient(90deg, var(--primary), var(--accent));
             -webkit-background-clip: text;
             background-clip: text;
@@ -96,18 +107,21 @@
             text-align: center;
             margin-bottom: 10px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            line-height: 1.2;
         }
         
         h2 {
             color: white;
             text-align: center;
             margin-bottom: 10px;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
         }
         
         p {
             text-align: center;
             line-height: 1.5;
-            max-width: 600px;
+            font-size: clamp(0.9rem, 3vw, 1rem);
+            max-width: 100%;
         }
         
         button {
@@ -116,21 +130,22 @@
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             border: none;
             color: white;
-            padding: 15px 25px;
+            padding: 12px 20px;
             text-align: center;
-            font-size: 1rem;
+            font-size: clamp(0.9rem, 3.5vw, 1rem);
             cursor: pointer;
             border-radius: 50px;
             transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+            box-shadow: 0 4px 10px rgba(108, 92, 231, 0.4);
             width: 100%;
             max-width: 300px;
             margin: 0 auto;
+            touch-action: manipulation;
         }
         
-        button:hover {
+        button:hover, button:focus {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.6);
+            box-shadow: 0 6px 15px rgba(108, 92, 231, 0.6);
         }
         
         button:active {
@@ -139,10 +154,10 @@
         
         .media-container {
             width: 100%;
-            height: 200px;
+            height: clamp(150px, 30vh, 200px);
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
             margin: 10px 0;
         }
         
@@ -157,11 +172,12 @@
             width: 100%;
             max-width: 300px;
             padding: 12px;
-            font-size: 1rem;
+            font-size: clamp(0.9rem, 3.5vw, 1rem);
             border-radius: 50px;
             border: none;
             margin: 15px 0;
             text-align: center;
+            background: rgba(255,255,255,0.9);
         }
         
         /* Main Menu Screen */
@@ -178,54 +194,64 @@
             display: flex;
             justify-content: space-between;
             margin: 5px 0;
+            font-size: clamp(0.8rem, 3vw, 0.9rem);
         }
         
         /* Battle Screen */
         .battle-stats {
             display: flex;
-            gap: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
             width: 100%;
             justify-content: center;
         }
         
         .battle-stat {
             background: rgba(0,0,0,0.3);
-            padding: 15px;
+            padding: 12px;
             border-radius: 10px;
-            min-width: 150px;
+            min-width: 120px;
+            flex: 1;
+            max-width: 160px;
+        }
+        
+        .battle-stat h3 {
+            font-size: clamp(0.9rem, 3.5vw, 1rem);
+            margin-bottom: 5px;
         }
         
         .question-container {
             background: rgba(0,0,0,0.3);
-            padding: 20px;
+            padding: 15px;
             border-radius: 10px;
             width: 100%;
-            max-width: 600px;
         }
         
         .question-text {
             font-weight: 600;
             margin-bottom: 15px;
             text-align: center;
+            font-size: clamp(0.9rem, 3.5vw, 1rem);
         }
         
         .options {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 10px;
+            gap: 8px;
         }
         
         .option {
-            padding: 12px;
+            padding: 10px;
             background: rgba(255,255,255,0.05);
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
             border: 1px solid transparent;
             text-align: center;
+            font-size: clamp(0.8rem, 3vw, 0.9rem);
         }
         
-        .option:hover {
+        .option:hover, .option:focus {
             background: rgba(255,255,255,0.1);
         }
         
@@ -247,10 +273,10 @@
         /* Location Screen */
         .location-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 15px;
+            grid-template-columns: 1fr;
+            gap: 12px;
             width: 100%;
-            max-width: 800px;
+            max-width: 400px;
         }
         
         .location-card {
@@ -261,25 +287,33 @@
             transition: all 0.3s;
         }
         
-        .location-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        .location-card h3 {
+            font-size: clamp(1rem, 3.5vw, 1.2rem);
+            margin-bottom: 8px;
+        }
+        
+        .location-card p {
+            font-size: clamp(0.8rem, 3vw, 0.9rem);
+        }
+        
+        .location-card:hover, .location-card:focus {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
         
         /* Game Over Screen */
         .results-box {
             background: rgba(214, 48, 49, 0.2);
-            padding: 20px;
+            padding: 15px;
             border-radius: 10px;
             width: 100%;
             max-width: 400px;
             margin: 15px 0;
         }
         
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        /* Utility Classes */
+        .pulse {
+            animation: pulse 2s infinite;
         }
         
         @keyframes pulse {
@@ -288,27 +322,23 @@
             100% { transform: scale(1); }
         }
         
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
+        /* Responsive Adjustments */
+        @media (max-width: 400px) {
+            #game-container {
+                padding: 10px;
             }
             
-            .media-container {
-                height: 150px;
+            .screen {
+                padding: 10px;
             }
             
-            .battle-stats {
-                flex-direction: column;
-                align-items: center;
+            button {
+                padding: 10px 15px;
             }
             
-            .location-grid {
-                grid-template-columns: 1fr;
+            .battle-stat {
+                min-width: 100px;
+                padding: 10px;
             }
         }
     </style>
@@ -323,7 +353,7 @@
                 <p>As a nanobiologist, you've been miniaturized to explore the cellular world. Use your knowledge to defeat dangerous pathogens!</p>
                 
                 <div class="media-container">
-                    <video autoplay loop muted>
+                    <video autoplay loop muted playsinline>
                         <source src="https://assets.mixkit.co/videos/preview/mixkit-microscopic-view-of-a-virus-rotating-15645-large.mp4" type="video/mp4">
                     </video>
                 </div>
@@ -332,7 +362,7 @@
                 <input type="text" id="player-name" placeholder="Dr. Lastname">
             </div>
             <div class="screen-footer">
-                <button onclick="startGame()" class="pulse">Begin Expedition</button>
+                <button id="start-button" class="pulse">Begin Expedition</button>
             </div>
         </div>
         
@@ -343,7 +373,7 @@
                 <p id="location-description">The gatekeeper of the cell</p>
                 
                 <div class="media-container">
-                    <video autoplay loop muted id="location-video">
+                    <video autoplay loop muted playsinline id="location-video">
                         <source src="" type="video/mp4">
                     </video>
                 </div>
@@ -355,11 +385,11 @@
                     </div>
                     <div class="stat-row">
                         <span>HP:</span>
-                        <span id="player-hp">100/100</span>
+                        <span id="player-hp">80/80</span>
                     </div>
                     <div class="stat-row">
                         <span>EXP:</span>
-                        <span id="player-exp">0/100</span>
+                        <span id="player-exp">0/60</span>
                     </div>
                     <div class="stat-row">
                         <span>Accuracy:</span>
@@ -368,9 +398,9 @@
                 </div>
             </div>
             <div class="screen-footer">
-                <button onclick="explore()">Explore</button>
-                <button onclick="rest()">Use Health Pack</button>
-                <button onclick="showLocationScreen()">Travel</button>
+                <button id="explore-button">Explore</button>
+                <button id="heal-button">Use Health Pack</button>
+                <button id="travel-button">Travel</button>
             </div>
         </div>
         
@@ -380,7 +410,7 @@
                 <h1 id="enemy-name">Battle</h1>
                 
                 <div class="media-container">
-                    <video autoplay loop muted id="enemy-video">
+                    <video autoplay loop muted playsinline id="enemy-video">
                         <source src="" type="video/mp4">
                     </video>
                 </div>
@@ -388,7 +418,7 @@
                 <div class="battle-stats">
                     <div class="battle-stat">
                         <h3>You</h3>
-                        <div id="battle-player-hp">HP: 100/100</div>
+                        <div id="battle-player-hp">HP: 80/80</div>
                     </div>
                     <div class="battle-stat">
                         <h3 id="enemy-title">Enemy</h3>
@@ -404,8 +434,8 @@
                 </div>
             </div>
             <div class="screen-footer">
-                <button id="submit-btn" onclick="checkAnswer()" disabled>Submit Answer</button>
-                <button onclick="tryFlee()" style="background: linear-gradient(135deg, #636e72, #b2bec3);">Retreat</button>
+                <button id="submit-button" disabled>Submit Answer</button>
+                <button id="retreat-button">Retreat</button>
             </div>
         </div>
         
@@ -420,7 +450,7 @@
                 </div>
             </div>
             <div class="screen-footer">
-                <button onclick="showMainMenu()">Back</button>
+                <button id="back-button">Back</button>
             </div>
         </div>
         
@@ -431,7 +461,7 @@
                 <p id="game-over-text">You've saved the cell!</p>
                 
                 <div class="media-container">
-                    <video autoplay loop muted>
+                    <video autoplay loop muted playsinline>
                         <source src="https://assets.mixkit.co/videos/preview/mixkit-red-blood-cells-flowing-in-a-vein-15800-large.mp4" type="video/mp4">
                     </video>
                 </div>
@@ -452,21 +482,43 @@
                     </div>
                 </div>
                 
-                <p id="performance-comment" style="color: var(--success);">Great job!</p>
+                <p id="performance-comment">Great job!</p>
             </div>
             <div class="screen-footer">
-                <button onclick="resetGame()" class="pulse">New Expedition</button>
+                <button id="restart-button" class="pulse">New Expedition</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Game data - all your biology questions
+        // Game data
         const biologyQuestions = [
             // ... (same questions array as before)
+            {
+                question: "What is the main function of the nucleus?",
+                options: [
+                    "Store nutrients",
+                    "Store and protect DNA",
+                    "Help with digestion",
+                    "Make proteins"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            {
+                question: "Which organelle is responsible for making proteins?",
+                options: [
+                    "Mitochondria",
+                    "Ribosomes",
+                    "Lysosomes",
+                    "Golgi apparatus"
+                ],
+                answer: 1,
+                category: "Cell Structure"
+            },
+            // Add more questions as needed...
         ];
 
-        // Locations with their categories
         const locations = [
             { 
                 name: "Cell Membrane", 
@@ -498,7 +550,6 @@
             }
         ];
 
-        // Enemy types by category
         const enemyTypes = {
             "Cell Structure": ["Misfolded Protein", "Viral Invader", "Damaged Organelle"],
             "Cell Function": ["Toxic Metabolite", "Energy Parasite", "Dysfunctional Enzyme"],
@@ -527,7 +578,7 @@
         let currentQuestion = null;
         let selectedAnswer = null;
         let enemiesDefeated = 0;
-        const ENEMIES_TO_WIN = 6; // For 20-25 minute gameplay
+        const ENEMIES_TO_WIN = 6;
 
         // DOM elements
         const screens = {
@@ -538,6 +589,26 @@
             gameOver: document.getElementById('game-over-screen')
         };
 
+        // Initialize game
+        document.addEventListener('DOMContentLoaded', () => {
+            // Button event listeners
+            document.getElementById('start-button').addEventListener('click', startGame);
+            document.getElementById('explore-button').addEventListener('click', explore);
+            document.getElementById('heal-button').addEventListener('click', rest);
+            document.getElementById('travel-button').addEventListener('click', showLocationScreen);
+            document.getElementById('submit-button').addEventListener('click', checkAnswer);
+            document.getElementById('retreat-button').addEventListener('click', tryFlee);
+            document.getElementById('back-button').addEventListener('click', () => showScreen('main'));
+            document.getElementById('restart-button').addEventListener('click', resetGame);
+            
+            // Input event for name field
+            document.getElementById('player-name').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    startGame();
+                }
+            });
+        });
+
         // Game functions
         function showScreen(screenName) {
             for (const [name, screen] of Object.entries(screens)) {
@@ -546,12 +617,16 @@
         }
 
         function startGame() {
-            const name = document.getElementById('player-name').value.trim();
+            const nameInput = document.getElementById('player-name');
+            const name = nameInput.value.trim();
+            
             if (!name) {
                 alert("Please enter your name, Doctor!");
+                nameInput.focus();
                 return;
             }
             
+            // Reset player state
             player = {
                 name,
                 level: 1,
@@ -602,25 +677,7 @@
             const event = Math.random();
             
             if (event < 0.7) {
-                const category = location.categories[Math.floor(Math.random() * location.categories.length)];
-                const baseLevel = Math.max(1, player.level + Math.floor(Math.random() * 2) - 1);
-                const knowledgeModifier = Math.floor(player.knowledge[category] / 2);
-                const enemyLevel = Math.max(1, baseLevel - knowledgeModifier);
-                
-                const enemies = enemyTypes[category];
-                const enemyName = enemies[Math.floor(Math.random() * enemies.length)];
-                
-                currentEnemy = {
-                    name: enemyName,
-                    level: enemyLevel,
-                    hp: 20 + (enemyLevel * 8),
-                    max_hp: 20 + (enemyLevel * 8),
-                    damage: 4 + (enemyLevel * 2),
-                    category,
-                    videoUrl: `https://assets.mixkit.co/videos/preview/mixkit-microscopic-view-of-a-virus-rotating-15645-large.mp4`
-                };
-                
-                startBattle();
+                startBattleAtLocation(location);
             } else if (event < 0.9) {
                 player.hp = Math.min(player.hp + 20, player.max_hp);
                 updateMainMenu();
@@ -628,6 +685,28 @@
             } else {
                 alert("You carefully examine the area but find nothing unusual.");
             }
+        }
+
+        function startBattleAtLocation(location) {
+            const category = location.categories[Math.floor(Math.random() * location.categories.length)];
+            const baseLevel = Math.max(1, player.level + Math.floor(Math.random() * 2) - 1);
+            const knowledgeModifier = Math.floor(player.knowledge[category] / 2);
+            const enemyLevel = Math.max(1, baseLevel - knowledgeModifier);
+            
+            const enemies = enemyTypes[category];
+            const enemyName = enemies[Math.floor(Math.random() * enemies.length)];
+            
+            currentEnemy = {
+                name: enemyName,
+                level: enemyLevel,
+                hp: 20 + (enemyLevel * 8),
+                max_hp: 20 + (enemyLevel * 8),
+                damage: 4 + (enemyLevel * 2),
+                category,
+                videoUrl: `https://assets.mixkit.co/videos/preview/mixkit-microscopic-view-of-a-virus-rotating-15645-large.mp4`
+            };
+            
+            startBattle();
         }
 
         function startBattle() {
@@ -646,7 +725,7 @@
                 const optionElement = document.createElement('div');
                 optionElement.className = 'option';
                 optionElement.textContent = `${String.fromCharCode(65 + index)}) ${option}`;
-                optionElement.onclick = () => selectAnswer(index);
+                optionElement.addEventListener('click', () => selectAnswer(index));
                 optionsContainer.appendChild(optionElement);
             });
             
@@ -654,7 +733,7 @@
             video.querySelector('source').src = currentEnemy.videoUrl;
             video.load();
             
-            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('submit-button').disabled = true;
             showScreen('battle');
         }
 
@@ -663,20 +742,31 @@
             options.forEach(opt => opt.classList.remove('selected'));
             options[index].classList.add('selected');
             selectedAnswer = index;
-            document.getElementById('submit-btn').disabled = false;
+            document.getElementById('submit-button').disabled = false;
         }
 
         function checkAnswer() {
             const correct = selectedAnswer === currentQuestion.answer;
             player.questionsAnswered++;
             
+            // Highlight correct/incorrect answers
+            const options = document.querySelectorAll('.option');
+            options.forEach((opt, idx) => {
+                if (idx === currentQuestion.answer) {
+                    opt.classList.add('correct');
+                } else if (idx === selectedAnswer && !correct) {
+                    opt.classList.add('incorrect');
+                }
+                opt.style.pointerEvents = 'none';
+            });
+            
+            document.getElementById('submit-button').disabled = true;
+            
             if (correct) {
                 player.correctAnswers++;
                 const knowledgeBonus = player.knowledge[currentQuestion.category] || 1;
                 const damage = 8 * knowledgeBonus;
                 currentEnemy.hp -= damage;
-                
-                document.querySelectorAll('.option')[currentQuestion.answer].classList.add('correct');
                 
                 if (currentEnemy.hp <= 0) {
                     currentEnemy.hp = 0;
@@ -685,6 +775,7 @@
                     const expGain = currentEnemy.level * 15;
                     player.exp += expGain;
                     
+                    // Check for level up
                     if (player.exp >= player.exp_to_level) {
                         player.level++;
                         player.max_hp += 15;
@@ -709,29 +800,41 @@
                             showScreen('main');
                         }, 1500);
                     }
+                } else {
+                    document.getElementById('enemy-hp').textContent = `HP: ${currentEnemy.hp}/${currentEnemy.max_hp}`;
+                    setTimeout(() => enemyAttack(), 1500);
                 }
             } else {
-                document.querySelectorAll('.option')[selectedAnswer].classList.add('incorrect');
-                document.querySelectorAll('.option')[currentQuestion.answer].classList.add('correct');
-                
-                // Enemy attacks
-                player.hp -= currentEnemy.damage;
-                
-                if (player.hp <= 0) {
-                    player.hp = 0;
-                    setTimeout(showGameOver, 1500);
-                }
+                setTimeout(() => enemyAttack(), 1500);
             }
-            
-            // Update displays
+        }
+
+        function enemyAttack() {
+            player.hp -= currentEnemy.damage;
             document.getElementById('battle-player-hp').textContent = `HP: ${player.hp}/${player.max_hp}`;
-            document.getElementById('enemy-hp').textContent = `HP: ${currentEnemy.hp}/${currentEnemy.max_hp}`;
             
-            // Disable further selection
-            document.querySelectorAll('.option').forEach(opt => {
-                opt.style.pointerEvents = 'none';
-            });
-            document.getElementById('submit-btn').disabled = true;
+            if (player.hp <= 0) {
+                player.hp = 0;
+                setTimeout(showGameOver, 1500);
+            } else {
+                // Reset for next question
+                currentQuestion = getRandomQuestion(currentEnemy.category);
+                document.getElementById('question-text').textContent = currentQuestion.question;
+                
+                const optionsContainer = document.getElementById('options-container');
+                optionsContainer.innerHTML = '';
+                
+                currentQuestion.options.forEach((option, index) => {
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'option';
+                    optionElement.textContent = `${String.fromCharCode(65 + index)}) ${option}`;
+                    optionElement.addEventListener('click', () => selectAnswer(index));
+                    optionsContainer.appendChild(optionElement);
+                });
+                
+                document.getElementById('submit-button').disabled = true;
+                selectedAnswer = null;
+            }
         }
 
         function tryFlee() {
@@ -741,15 +844,7 @@
                 showScreen('main');
             } else {
                 alert("Escape failed! The enemy attacks!");
-                
-                // Enemy attacks
-                player.hp -= currentEnemy.damage;
-                document.getElementById('battle-player-hp').textContent = `HP: ${player.hp}/${player.max_hp}`;
-                
-                if (player.hp <= 0) {
-                    player.hp = 0;
-                    setTimeout(showGameOver, 1500);
-                }
+                enemyAttack();
             }
         }
 
@@ -760,15 +855,16 @@
             locations.forEach(location => {
                 const card = document.createElement('div');
                 card.className = 'location-card';
+                card.style.borderLeft = `4px solid ${location.color}`;
                 card.innerHTML = `
                     <h3 style="color: ${location.color}">${location.name}</h3>
                     <p>${location.description}</p>
                 `;
-                card.onclick = () => {
+                card.addEventListener('click', () => {
                     player.location = location.name;
                     updateMainMenu();
                     showScreen('main');
-                };
+                });
                 container.appendChild(card);
             });
             
@@ -799,6 +895,8 @@
                 comment = "📚 Good effort! Keep studying cellular biology!";
             }
             document.getElementById('performance-comment').textContent = comment;
+            document.getElementById('performance-comment').style.color = accuracy > 80 ? "var(--success)" : 
+                                                                       accuracy > 60 ? "var(--warning)" : "var(--info)";
             
             showScreen('gameOver');
         }
@@ -821,16 +919,21 @@
                 comment = "📚 Study more and try again!";
             }
             document.getElementById('performance-comment').textContent = comment;
+            document.getElementById('performance-comment').style.color = accuracy > 80 ? "var(--success)" : 
+                                                                       accuracy > 60 ? "var(--warning)" : "var(--info)";
             
             showScreen('gameOver');
         }
 
         function resetGame() {
             showScreen('welcome');
+            document.getElementById('player-name').value = "";
+            document.getElementById('player-name').focus();
         }
 
         function getRandomQuestion(category) {
             const availableQuestions = biologyQuestions.filter(q => q.category === category);
+            if (availableQuestions.length === 0) return biologyQuestions[0]; // Fallback
             return availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
         }
     </script>
