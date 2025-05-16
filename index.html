@@ -16,71 +16,98 @@
             --info: #0984e3;
         }
         
-        body {
-            font-family: 'Montserrat', sans-serif;
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
             background-color: #0f0f1a;
             color: var(--light);
-            line-height: 1.6;
             height: 100vh;
+            width: 100vw;
             overflow: hidden;
             background-image: 
                 radial-gradient(circle at 10% 20%, rgba(108, 92, 231, 0.1) 0%, transparent 20%),
                 radial-gradient(circle at 90% 80%, rgba(253, 121, 168, 0.1) 0%, transparent 20%);
         }
         
-        .game-container {
-            background-color: rgba(45, 52, 54, 0.9);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            animation: fadeIn 0.5s ease-out;
-            height: calc(100vh - 40px);
-            width: calc(100vw - 40px);
+        #game-container {
             position: fixed;
             top: 0;
             left: 0;
-            margin: 20px;
+            width: 100vw;
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            padding: 20px;
+            background-color: rgba(45, 52, 54, 0.9);
+        }
+        
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
             overflow: hidden;
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
         }
         
-        h1, h2, h3, h4 {
-            font-weight: 700;
-            margin-top: 0;
-            color: white;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        .screen-content {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            flex-grow: 1;
+            justify-content: center;
+        }
+        
+        .screen-footer {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
         
         h1 {
-            font-size: 2rem;
+            font-size: 2.5rem;
             background: linear-gradient(90deg, var(--primary), var(--accent));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            margin-bottom: 15px;
-            position: relative;
-            display: inline-block;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         
-        h1::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-            border-radius: 2px;
+        h2 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        p {
+            text-align: center;
+            line-height: 1.5;
+            max-width: 600px;
         }
         
         button {
@@ -89,127 +116,113 @@
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             border: none;
             color: white;
-            padding: 10px 20px;
+            padding: 15px 25px;
             text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 14px;
-            margin: 5px;
+            font-size: 1rem;
             cursor: pointer;
             border-radius: 50px;
             transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(108, 92, 231, 0.4);
-            position: relative;
-            overflow: hidden;
-            flex-grow: 1;
-            min-width: 120px;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
         }
         
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(108, 92, 231, 0.6);
+            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.6);
         }
         
         button:active {
             transform: translateY(1px);
         }
         
-        button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
+        .media-container {
+            width: 100%;
+            height: 200px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            margin: 10px 0;
+        }
+        
+        .media-container video {
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: 0.5s;
+            object-fit: cover;
         }
         
-        button:hover::before {
-            left: 100%;
+        /* Welcome Screen */
+        #welcome-screen input {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px;
+            font-size: 1rem;
+            border-radius: 50px;
+            border: none;
+            margin: 15px 0;
+            text-align: center;
         }
         
-        button:disabled {
-            background: #636e72;
-            box-shadow: none;
-            transform: none;
-            cursor: not-allowed;
-        }
-        
-        button:disabled::before {
-            display: none;
-        }
-        
-        .battle-log {
-            height: 100px;
-            overflow-y: auto;
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 10px;
-            margin-top: 10px;
-            background-color: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            font-family: 'Source Code Pro', monospace;
-            color: #dfe6e9;
-            font-size: 0.9rem;
-            flex-shrink: 0;
-        }
-        
-        .stats {
+        /* Main Menu Screen */
+        .stats-container {
             background: rgba(0,0,0,0.3);
             padding: 15px;
             border-radius: 10px;
-            margin-bottom: 10px;
-            border: 1px solid rgba(255,255,255,0.05);
-            position: relative;
-            flex-shrink: 0;
+            width: 100%;
+            max-width: 400px;
+            margin: 10px 0;
         }
         
-        .stats::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-            border-radius: 3px 3px 0 0;
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+        
+        /* Battle Screen */
+        .battle-stats {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .battle-stat {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 150px;
         }
         
         .question-container {
             background: rgba(0,0,0,0.3);
-            padding: 15px;
+            padding: 20px;
             border-radius: 10px;
-            margin: 10px 0;
-            border-left: 4px solid var(--primary);
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
+            width: 100%;
+            max-width: 600px;
         }
         
         .question-text {
-            margin-bottom: 10px;
             font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
         }
         
         .options {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            overflow-y: auto;
-            flex-grow: 1;
-            padding: 5px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
         }
         
         .option {
-            padding: 10px;
+            padding: 12px;
             background: rgba(255,255,255,0.05);
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
             border: 1px solid transparent;
-            font-weight: 500;
-            font-size: 0.9rem;
+            text-align: center;
         }
         
         .option:hover {
@@ -221,413 +234,237 @@
             background: rgba(108, 92, 231, 0.2);
         }
         
-        .correct {
-            background: rgba(0, 184, 148, 0.2) !important;
-            border: 1px solid var(--success) !important;
+        .option.correct {
+            background: rgba(0, 184, 148, 0.2);
+            border: 1px solid var(--success);
         }
         
-        .incorrect {
-            background: rgba(214, 48, 49, 0.2) !important;
-            border: 1px solid var(--danger) !important;
+        .option.incorrect {
+            background: rgba(214, 48, 49, 0.2);
+            border: 1px solid var(--danger);
         }
         
-        .media-container {
+        /* Location Screen */
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
             width: 100%;
-            height: 150px;
-            object-fit: cover;
-            margin: 10px 0;
+            max-width: 800px;
+        }
+        
+        .location-card {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            border: 2px solid rgba(255,255,255,0.1);
-            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.3s;
         }
         
-        .progress-container {
-            width: 100%;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50px;
-            margin: 5px 0;
-            height: 8px;
-            overflow: hidden;
+        .location-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
         
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-            border-radius: 50px;
+        /* Game Over Screen */
+        .results-box {
+            background: rgba(214, 48, 49, 0.2);
+            padding: 20px;
+            border-radius: 10px;
             width: 100%;
-            transition: width 0.5s ease-out;
+            max-width: 400px;
+            margin: 15px 0;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
         
         .pulse {
             animation: pulse 2s infinite;
         }
         
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(108, 92, 231, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(108, 92, 231, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(108, 92, 231, 0); }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.3s ease-out;
-        }
-        
-        .shake {
-            animation: shake 0.5s;
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
-        
-        .damage-effect {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(214, 48, 49, 0.3);
-            pointer-events: none;
-            opacity: 0;
-            z-index: 100;
-        }
-        
-        .heal-effect {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 184, 148, 0.3);
-            pointer-events: none;
-            opacity: 0;
-            z-index: 100;
-        }
-        
-        .location-card {
-            background: rgba(0,0,0,0.3);
-            border-radius: 10px;
-            padding: 12px;
-            margin: 8px 0;
-            transition: all 0.3s;
-            border: 1px solid transparent;
-            cursor: pointer;
-        }
-        
-        .location-card:hover {
-            border: 1px solid var(--primary);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        .location-category {
-            display: inline-block;
-            font-size: 0.7rem;
-            background: rgba(253, 121, 168, 0.2);
-            color: var(--accent);
-            padding: 2px 6px;
-            border-radius: 50px;
-            margin-right: 4px;
-        }
-        
-        /* Overlay styles */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(5px);
-        }
-        
-        .overlay-content {
-            background-color: rgba(45, 52, 54, 0.95);
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 80vh;
-            border: 2px solid var(--primary);
-            box-shadow: 0 0 20px rgba(108, 92, 231, 0.5);
-            position: relative;
-        }
-        
-        .close-overlay {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--danger);
-            border: none;
-            color: white;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .knowledge-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 8px;
-            margin-top: 10px;
-        }
-        
-        .knowledge-item {
-            background: rgba(108, 92, 231, 0.1);
-            padding: 8px;
-            border-radius: 6px;
-            text-align: center;
-            border: 1px solid var(--primary);
-            font-size: 0.8rem;
-        }
-        
-        .knowledge-stars {
-            font-size: 1rem;
-            color: var(--warning);
-            margin-top: 3px;
-        }
-        
-        .screen {
-            display: none;
-            flex-direction: column;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-        }
-        
-        .screen.active {
-            display: flex;
-        }
-        
-        .content-area {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            overflow: hidden;
-        }
-        
-        .scrollable-content {
-            overflow-y: auto;
-            flex-grow: 1;
-            padding-bottom: 10px;
-        }
-        
-        .button-row {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin: 5px 0;
-            flex-shrink: 0;
-            gap: 5px;
-        }
-        
-        /* Responsive design */
+        /* Responsive */
         @media (max-width: 768px) {
-            .game-container {
-                padding: 15px;
-                margin: 10px;
-                height: calc(100vh - 20px);
-                width: calc(100vw - 20px);
-            }
-            
             h1 {
-                font-size: 1.8rem;
-            }
-            
-            button {
-                padding: 8px 15px;
-                font-size: 13px;
-                min-width: 100px;
+                font-size: 2rem;
             }
             
             .media-container {
-                height: 120px;
+                height: 150px;
             }
             
-            .question-text {
-                font-size: 0.9rem;
+            .battle-stats {
+                flex-direction: column;
+                align-items: center;
             }
             
-            .option {
-                padding: 8px;
-                font-size: 0.8rem;
+            .location-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <h1>Cell Explorer: Biology Quest</h1>
-        
+    <div id="game-container">
         <!-- Welcome Screen -->
         <div id="welcome-screen" class="screen active">
-            <div class="content-area">
-                <div class="scrollable-content">
-                    <h2>Welcome to the Microscopic Frontier!</h2>
-                    <p>As a nanobiologist, you've been miniaturized to explore the cellular world. Deadly pathogens threaten the cell - use your biology knowledge to defeat them!</p>
-                    
-                    <video autoplay loop muted class="media-container">
+            <div class="screen-content">
+                <h1>Cell Explorer</h1>
+                <h2>Biology Quest</h2>
+                <p>As a nanobiologist, you've been miniaturized to explore the cellular world. Use your knowledge to defeat dangerous pathogens!</p>
+                
+                <div class="media-container">
+                    <video autoplay loop muted>
                         <source src="https://assets.mixkit.co/videos/preview/mixkit-microscopic-view-of-a-virus-rotating-15645-large.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
                     </video>
-                    
-                    <p>Enter your scientist's name:</p>
-                    <input type="text" id="player-name" placeholder="Dr. Lastname" style="width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px;">
                 </div>
+                
+                <p>Enter your scientist's name:</p>
+                <input type="text" id="player-name" placeholder="Dr. Lastname">
             </div>
-            <div class="button-row">
+            <div class="screen-footer">
                 <button onclick="startGame()" class="pulse">Begin Expedition</button>
             </div>
         </div>
         
         <!-- Main Menu Screen -->
         <div id="main-menu-screen" class="screen">
-            <div class="stats" id="player-stats"></div>
-            <div class="content-area">
-                <div class="scrollable-content">
-                    <h2 id="location-title"></h2>
-                    <p id="location-description"></p>
-                    
-                    <video autoplay loop muted class="media-container" id="location-video">
+            <div class="screen-content">
+                <h1 id="current-location">Cell Membrane</h1>
+                <p id="location-description">The gatekeeper of the cell</p>
+                
+                <div class="media-container">
+                    <video autoplay loop muted id="location-video">
                         <source src="" type="video/mp4">
-                        Your browser does not support the video tag.
                     </video>
                 </div>
+                
+                <div class="stats-container">
+                    <div class="stat-row">
+                        <span>Level:</span>
+                        <span id="player-level">1</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>HP:</span>
+                        <span id="player-hp">100/100</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>EXP:</span>
+                        <span id="player-exp">0/100</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Accuracy:</span>
+                        <span id="player-accuracy">0%</span>
+                    </div>
+                </div>
             </div>
-            <div class="button-row">
+            <div class="screen-footer">
                 <button onclick="explore()">Explore</button>
-                <button onclick="rest()">Heal (+20 HP)</button>
+                <button onclick="rest()">Use Health Pack</button>
                 <button onclick="showLocationScreen()">Travel</button>
             </div>
-            <div id="battle-log" class="battle-log"></div>
         </div>
         
         <!-- Battle Screen -->
         <div id="battle-screen" class="screen">
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <div class="stats" id="battle-player-stats" style="flex: 1;"></div>
-                <div class="stats" id="enemy-stats" style="flex: 1;"></div>
-            </div>
-            <div class="content-area">
-                <div class="scrollable-content">
-                    <h2 id="battle-title" style="color: var(--danger); margin-bottom: 10px;"></h2>
-                    
-                    <video autoplay loop muted class="media-container" id="enemy-video">
+            <div class="screen-content">
+                <h1 id="enemy-name">Battle</h1>
+                
+                <div class="media-container">
+                    <video autoplay loop muted id="enemy-video">
                         <source src="" type="video/mp4">
-                        Your browser does not support the video tag.
                     </video>
-                    
-                    <div class="question-container">
-                        <div class="question-text" id="question-text"></div>
-                        <div class="options" id="options-container"></div>
+                </div>
+                
+                <div class="battle-stats">
+                    <div class="battle-stat">
+                        <h3>You</h3>
+                        <div id="battle-player-hp">HP: 100/100</div>
+                    </div>
+                    <div class="battle-stat">
+                        <h3 id="enemy-title">Enemy</h3>
+                        <div id="enemy-hp">HP: 50/50</div>
+                    </div>
+                </div>
+                
+                <div class="question-container">
+                    <div class="question-text" id="question-text">Question will appear here</div>
+                    <div class="options" id="options-container">
+                        <!-- Options will be inserted here -->
                     </div>
                 </div>
             </div>
-            <div class="button-row">
-                <button id="submit-btn" onclick="checkAnswer()" disabled>Submit</button>
+            <div class="screen-footer">
+                <button id="submit-btn" onclick="checkAnswer()" disabled>Submit Answer</button>
                 <button onclick="tryFlee()" style="background: linear-gradient(135deg, #636e72, #b2bec3);">Retreat</button>
             </div>
-            <div id="battle-log-2" class="battle-log"></div>
         </div>
         
         <!-- Location Screen -->
         <div id="location-screen" class="screen">
-            <div class="content-area">
-                <div class="scrollable-content">
-                    <h2>Select Research Destination:</h2>
-                    <p>Choose a new cellular location to explore. Different locations contain different types of pathogens.</p>
-                    
-                    <div id="location-cards"></div>
+            <div class="screen-content">
+                <h1>Travel</h1>
+                <p>Choose a new cellular location to explore</p>
+                
+                <div class="location-grid" id="location-cards">
+                    <!-- Location cards will be inserted here -->
                 </div>
             </div>
-            <div class="button-row">
+            <div class="screen-footer">
                 <button onclick="showMainMenu()">Back</button>
             </div>
         </div>
         
         <!-- Game Over Screen -->
         <div id="game-over-screen" class="screen">
-            <div class="content-area">
-                <div class="scrollable-content" style="text-align: center;">
-                    <h2 style="color: var(--danger);">MISSION COMPLETE</h2>
-                    <p id="game-over-text"></p>
-                    
-                    <video autoplay loop muted class="media-container">
+            <div class="screen-content">
+                <h1 id="game-over-title">Mission Complete</h1>
+                <p id="game-over-text">You've saved the cell!</p>
+                
+                <div class="media-container">
+                    <video autoplay loop muted>
                         <source src="https://assets.mixkit.co/videos/preview/mixkit-red-blood-cells-flowing-in-a-vein-15800-large.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
                     </video>
-                    
-                    <div style="background: rgba(214, 48, 49, 0.2); padding: 15px; border-radius: 10px; margin: 15px 0;">
-                        <h3>Expedition Report</h3>
-                        <p>Final Level: <strong id="final-level"></strong></p>
-                        <p>Questions Answered: <strong id="questions-answered"></strong></p>
-                        <p>Accuracy: <strong id="final-accuracy"></strong></p>
-                    </div>
-                    
-                    <p id="performance-comment" style="color: var(--success);"></p>
                 </div>
+                
+                <div class="results-box">
+                    <h3>Expedition Report</h3>
+                    <div class="stat-row">
+                        <span>Final Level:</span>
+                        <span id="final-level">1</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Questions Answered:</span>
+                        <span id="questions-answered">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Accuracy:</span>
+                        <span id="final-accuracy">0%</span>
+                    </div>
+                </div>
+                
+                <p id="performance-comment" style="color: var(--success);">Great job!</p>
             </div>
-            <div class="button-row">
+            <div class="screen-footer">
                 <button onclick="resetGame()" class="pulse">New Expedition</button>
             </div>
         </div>
     </div>
-    
-    <!-- Overlay for knowledge display -->
-    <div id="knowledge-overlay" class="overlay" style="display: none;">
-        <div class="overlay-content">
-            <button class="close-overlay" onclick="closeOverlay()">×</button>
-            <h2>Your Knowledge Base</h2>
-            <p>Your expertise in different biology categories affects your damage against pathogens.</p>
-            <div class="knowledge-container" id="knowledge-display"></div>
-        </div>
-    </div>
-    
-    <div id="damage-effect" class="damage-effect"></div>
-    <div id="heal-effect" class="heal-effect"></div>
 
     <script>
         // Game data - all your biology questions
         const biologyQuestions = [
-            // Previous questions array remains the same
-            // ... (include all the questions from previous version)
+            // ... (same questions array as before)
         ];
-
-        // Track which questions have been used
-        const usedQuestionIndices = new Set();
-
-        function getRandomQuestion(category) {
-            // Filter questions by category and unused ones
-            const availableQuestions = biologyQuestions
-                .map((q, index) => ({...q, index}))
-                .filter(q => 
-                    (category ? q.category === category : true) && 
-                    !usedQuestionIndices.has(q.index)
-                );
-
-            if (availableQuestions.length === 0) {
-                // If all questions have been used, reset the used set
-                usedQuestionIndices.clear();
-                return getRandomQuestion(category);
-            }
-
-            const randomQuestion = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
-            usedQuestionIndices.add(randomQuestion.index);
-            return randomQuestion;
-        }
 
         // Locations with their categories
         const locations = [
@@ -658,13 +495,6 @@
                 description: "The powerhouse of the cell where ATP is produced.",
                 color: "#00b894",
                 video: "https://assets.mixkit.co/videos/preview/mixkit-cells-under-a-microscope-15828-large.mp4"
-            },
-            { 
-                name: "Chloroplast", 
-                categories: ["Photosynthesis"], 
-                description: "Where photosynthesis occurs in plant cells.",
-                color: "#00cec9",
-                video: "https://assets.mixkit.co/videos/preview/mixkit-cells-under-a-microscope-15828-large.mp4"
             }
         ];
 
@@ -672,279 +502,103 @@
         const enemyTypes = {
             "Cell Structure": ["Misfolded Protein", "Viral Invader", "Damaged Organelle"],
             "Cell Function": ["Toxic Metabolite", "Energy Parasite", "Dysfunctional Enzyme"],
-            "Photosynthesis": ["Light Blocker", "Chlorophyll Eater", "Oxygen Thief"],
             "Cellular Energy": ["ATP Drainer", "Mitochondrial Virus", "Energy Vampire"]
         };
 
         // Game state
-        let player;
+        let player = {
+            name: "",
+            level: 1,
+            hp: 80,
+            max_hp: 80,
+            exp: 0,
+            exp_to_level: 60,
+            location: "Cell Membrane",
+            questionsAnswered: 0,
+            correctAnswers: 0,
+            knowledge: {
+                "Cell Structure": 1,
+                "Cell Function": 1,
+                "Cellular Energy": 1
+            }
+        };
+        
         let currentEnemy = null;
         let currentQuestion = null;
         let selectedAnswer = null;
-        let gameCompleted = false;
         let enemiesDefeated = 0;
-        const ENEMIES_TO_WIN = 8; // Adjusted for 20-25 minute playtime
+        const ENEMIES_TO_WIN = 6; // For 20-25 minute gameplay
 
-        // DOM helper functions
-        function logMessage(message, screen = "main") {
-            const battleLog = document.getElementById(screen === "battle" ? "battle-log-2" : "battle-log");
-            if (battleLog) {
-                const log = document.createElement('div');
-                log.innerHTML = message;
-                log.className = 'fade-in';
-                battleLog.appendChild(log);
-                battleLog.scrollTop = battleLog.scrollHeight;
-            }
-        }
-
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            document.getElementById(screenId).classList.add('active');
-        }
-
-        // Game classes
-        class Player {
-            constructor(name) {
-                this.name = name;
-                this.level = 1;
-                this.hp = 80; // Reduced from 100 for faster gameplay
-                this.max_hp = 80;
-                this.exp = 0;
-                this.exp_to_level = 60; // Reduced from 100 for faster leveling
-                this.knowledge = {
-                    "Cell Structure": 1,
-                    "Cell Function": 1,
-                    "Photosynthesis": 1,
-                    "Cellular Energy": 1
-                };
-                this.location = "Cell Membrane";
-                this.questionsAnswered = 0;
-                this.correctAnswers = 0;
-            }
-
-            levelUp() {
-                this.level += 1;
-                this.max_hp += 15; // Reduced from 20
-                this.hp = this.max_hp;
-                this.exp -= this.exp_to_level;
-                this.exp_to_level = Math.floor(this.exp_to_level * 1.3); // Reduced from 1.5
-                
-                // Improve knowledge in random categories
-                const categories = Object.keys(this.knowledge);
-                const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-                this.knowledge[randomCategory] += 1;
-                
-                logMessage(`<span style="color: var(--accent);">🌟 Level Up! Now Level ${this.level}!</span>`);
-                logMessage(`Max HP increased to ${this.max_hp}!`);
-                logMessage(`Your knowledge in <span style="color: var(--primary);">${randomCategory}</span> improved!`);
-                
-                // Play level up effect
-                document.getElementById('heal-effect').style.opacity = '0.5';
-                setTimeout(() => {
-                    document.getElementById('heal-effect').style.opacity = '0';
-                }, 800);
-            }
-
-            heal(amount) {
-                this.hp = Math.min(this.hp + amount, this.max_hp);
-                logMessage(`<span style="color: var(--success);">⚕️ +${amount} HP (${this.hp}/${this.max_hp})</span>`);
-                
-                // Play heal effect
-                document.getElementById('heal-effect').style.opacity = '0.3';
-                setTimeout(() => {
-                    document.getElementById('heal-effect').style.opacity = '0';
-                }, 400);
-            }
-
-            takeDamage(damage) {
-                this.hp -= damage;
-                
-                // Play damage effect
-                document.getElementById('damage-effect').style.opacity = '0.3';
-                setTimeout(() => {
-                    document.getElementById('damage-effect').style.opacity = '0';
-                }, 400);
-                
-                if (this.hp <= 0) {
-                    logMessage(`<span style="color: var(--danger);">💀 You've been defeated!</span>`);
-                    return true;
-                }
-                logMessage(`<span style="color: var(--danger);">⚠️ -${damage} HP (${this.hp}/${this.max_hp})</span>`);
-                return false;
-            }
-
-            gainExp(amount) {
-                this.exp += amount;
-                logMessage(`<span style="color: var(--warning);">✨ +${amount} EXP</span>`);
-                if (this.exp >= this.exp_to_level) {
-                    this.levelUp();
-                }
-            }
-
-            answerQuestion(correct) {
-                this.questionsAnswered++;
-                if (correct) {
-                    this.correctAnswers++;
-                }
-            }
-
-            getAccuracy() {
-                return this.questionsAnswered > 0 
-                    ? Math.round((this.correctAnswers / this.questionsAnswered) * 100)
-                    : 0;
-            }
-
-            displayStats() {
-                let stats = `<div style="margin-bottom: 8px;"><strong style="color: var(--primary);">${this.name}</strong> Lv.${this.level}</div>`;
-                
-                // HP Bar
-                stats += `<div style="margin-bottom: 3px;">HP: ${this.hp}/${this.max_hp}</div>`;
-                stats += `<div class="progress-container"><div class="progress-bar" style="width: ${(this.hp / this.max_hp) * 100}%;"></div></div>`;
-                
-                // EXP Bar
-                stats += `<div style="margin: 5px 0;">EXP: ${this.exp}/${this.exp_to_level}</div>`;
-                stats += `<div class="progress-container"><div class="progress-bar" style="width: ${(this.exp / this.exp_to_level) * 100}%; background: linear-gradient(90deg, var(--info), var(--secondary));"></div></div>`;
-                
-                stats += `<div style="margin: 5px 0;">Location: <strong>${this.location}</strong></div>`;
-                stats += `<div>Accuracy: <strong>${this.getAccuracy()}%</strong></div>`;
-                
-                return stats;
-            }
-        }
-
-        class Enemy {
-            constructor(name, level, category) {
-                this.name = name;
-                this.level = level;
-                this.hp = 20 + (level * 8); // Reduced base HP
-                this.max_hp = this.hp;
-                this.damage = 4 + (level * 2); // Reduced base damage
-                this.category = category;
-                this.videoUrl = this.getEnemyVideo();
-            }
-
-            getEnemyVideo() {
-                const videos = {
-                    "Misfolded Protein": "https://assets.mixkit.co/videos/preview/mixkit-microscopic-view-of-a-virus-rotating-15645-large.mp4",
-                    "Viral Invader": "https://assets.mixkit.co/videos/preview/mixkit-microscopic-view-of-a-virus-rotating-15645-large.mp4",
-                    "Damaged Organelle": "https://assets.mixkit.co/videos/preview/mixkit-cells-under-a-microscope-15828-large.mp4",
-                    "default": "https://assets.mixkit.co/videos/preview/mixkit-microscopic-view-of-a-virus-rotating-15645-large.mp4"
-                };
-                return videos[this.name] || videos.default;
-            }
-
-            getQuestion() {
-                return getRandomQuestion(this.category);
-            }
-
-            takeDamage(damage) {
-                this.hp -= damage;
-                if (this.hp <= 0) {
-                    logMessage(`<span style="color: var(--success);">☠️ ${this.name} defeated!</span>`, "battle");
-                    return true;
-                }
-                logMessage(`<span style="color: var(--accent);">⚡ ${this.name} -${damage} HP</span>`, "battle");
-                
-                // Shake animation
-                const video = document.getElementById('enemy-video');
-                if (video) {
-                    video.classList.add('shake');
-                    setTimeout(() => video.classList.remove('shake'), 500);
-                }
-                
-                return false;
-            }
-
-            attack(player) {
-                logMessage(`<span style="color: var(--danger);">☠️ ${this.name} attacks!</span>`, "battle");
-                return player.takeDamage(this.damage);
-            }
-
-            displayStats() {
-                let stats = `<div style="margin-bottom: 8px;"><strong style="color: var(--danger);">${this.name}</strong> Lv.${this.level}</div>`;
-                
-                // HP Bar
-                stats += `<div style="margin-bottom: 3px;">HP: ${this.hp}/${this.max_hp}</div>`;
-                stats += `<div class="progress-container"><div class="progress-bar" style="width: ${(this.hp / this.max_hp) * 100}%; background: linear-gradient(90deg, var(--danger), #e17055);"></div></div>`;
-                
-                stats += `<div style="margin: 3px 0;">Type: <span style="color: ${this.getCategoryColor()}">${this.category}</span></div>`;
-                stats += `<div>Damage: <strong>${this.damage}</strong></div>`;
-                
-                return stats;
-            }
-
-            getCategoryColor() {
-                const colors = {
-                    "Cell Structure": "#74b9ff",
-                    "Cell Function": "#a29bfe",
-                    "Photosynthesis": "#00b894",
-                    "Cellular Energy": "#fdcb6e"
-                };
-                return colors[this.category] || "#ffffff";
-            }
-        }
-
-        // Overlay functions
-        function showKnowledgeOverlay() {
-            const overlay = document.getElementById('knowledge-overlay');
-            const display = document.getElementById('knowledge-display');
-            
-            let html = '';
-            for (const [category, level] of Object.entries(player.knowledge)) {
-                html += `
-                    <div class="knowledge-item">
-                        <div>${category}</div>
-                        <div class="knowledge-stars">${"★".repeat(level)}${"☆".repeat(5-level)}</div>
-                        <div>Lv.${level}</div>
-                    </div>
-                `;
-            }
-            
-            display.innerHTML = html;
-            overlay.style.display = 'flex';
-        }
-
-        function closeOverlay() {
-            document.getElementById('knowledge-overlay').style.display = 'none';
-        }
+        // DOM elements
+        const screens = {
+            welcome: document.getElementById('welcome-screen'),
+            main: document.getElementById('main-menu-screen'),
+            battle: document.getElementById('battle-screen'),
+            location: document.getElementById('location-screen'),
+            gameOver: document.getElementById('game-over-screen')
+        };
 
         // Game functions
+        function showScreen(screenName) {
+            for (const [name, screen] of Object.entries(screens)) {
+                screen.classList.toggle('active', name === screenName);
+            }
+        }
+
         function startGame() {
             const name = document.getElementById('player-name').value.trim();
             if (!name) {
                 alert("Please enter your name, Doctor!");
                 return;
             }
-            player = new Player(name);
+            
+            player = {
+                name,
+                level: 1,
+                hp: 80,
+                max_hp: 80,
+                exp: 0,
+                exp_to_level: 60,
+                location: "Cell Membrane",
+                questionsAnswered: 0,
+                correctAnswers: 0,
+                knowledge: {
+                    "Cell Structure": 1,
+                    "Cell Function": 1,
+                    "Cellular Energy": 1
+                }
+            };
+            
             enemiesDefeated = 0;
-            gameCompleted = false;
-            logMessage(`<span style="color: var(--primary);">🔬 Welcome, Dr. ${name}!</span>`);
-            logMessage(`<span style="color: var(--accent);">⚠️ Defeat ${ENEMIES_TO_WIN} pathogens to save the cell!</span>`);
-            showMainMenu();
+            updateMainMenu();
+            showScreen('main');
         }
 
-        function showMainMenu() {
+        function updateMainMenu() {
             const location = locations.find(loc => loc.name === player.location);
             
-            document.getElementById('player-stats').innerHTML = player.displayStats();
-            document.getElementById('location-title').textContent = location.name;
-            document.getElementById('location-title').style.color = location.color;
+            document.getElementById('current-location').textContent = location.name;
+            document.getElementById('current-location').style.color = location.color;
             document.getElementById('location-description').textContent = location.description;
             
             const video = document.getElementById('location-video');
             video.querySelector('source').src = location.video;
             video.load();
             
-            showScreen('main-menu-screen');
+            document.getElementById('player-level').textContent = player.level;
+            document.getElementById('player-hp').textContent = `${player.hp}/${player.max_hp}`;
+            document.getElementById('player-exp').textContent = `${player.exp}/${player.exp_to_level}`;
+            
+            const accuracy = player.questionsAnswered > 0 
+                ? Math.round((player.correctAnswers / player.questionsAnswered) * 100)
+                : 0;
+            document.getElementById('player-accuracy').textContent = `${accuracy}%`;
         }
 
         function explore() {
             const location = locations.find(loc => loc.name === player.location);
-            logMessage(`<span style="color: ${location.color};">🌐 Exploring ${location.name}...</span>`);
             
-            // Random events (70% battle, 20% heal, 10% nothing)
+            // 70% chance of battle, 20% heal, 10% nothing
             const event = Math.random();
             
             if (event < 0.7) {
@@ -955,39 +609,53 @@
                 
                 const enemies = enemyTypes[category];
                 const enemyName = enemies[Math.floor(Math.random() * enemies.length)];
-                currentEnemy = new Enemy(enemyName, enemyLevel, category);
                 
-                logMessage(`<span style="color: var(--danger);">⚠️ ${currentEnemy.name} appeared!</span>`);
+                currentEnemy = {
+                    name: enemyName,
+                    level: enemyLevel,
+                    hp: 20 + (enemyLevel * 8),
+                    max_hp: 20 + (enemyLevel * 8),
+                    damage: 4 + (enemyLevel * 2),
+                    category,
+                    videoUrl: `https://assets.mixkit.co/videos/preview/mixkit-microscopic-view-of-a-virus-rotating-15645-large.mp4`
+                };
+                
                 startBattle();
             } else if (event < 0.9) {
-                logMessage(`<span style="color: var(--success);">⚕️ Found health pack!</span>`);
-                player.heal(20);
+                player.hp = Math.min(player.hp + 20, player.max_hp);
+                updateMainMenu();
+                alert(`You found a health pack! +20 HP (Now ${player.hp}/${player.max_hp})`);
             } else {
-                logMessage(`<span style="color: ${location.color};">🔍 Nothing found...</span>`);
+                alert("You carefully examine the area but find nothing unusual.");
             }
         }
 
         function startBattle() {
-            currentQuestion = currentEnemy.getQuestion();
+            currentQuestion = getRandomQuestion(currentEnemy.category);
             
-            document.getElementById('battle-player-stats').innerHTML = player.displayStats();
-            document.getElementById('enemy-stats').innerHTML = currentEnemy.displayStats();
-            document.getElementById('battle-title').textContent = `BATTLE: ${currentEnemy.name}`;
+            document.getElementById('enemy-name').textContent = currentEnemy.name;
+            document.getElementById('battle-player-hp').textContent = `HP: ${player.hp}/${player.max_hp}`;
+            document.getElementById('enemy-title').textContent = currentEnemy.name;
+            document.getElementById('enemy-hp').textContent = `HP: ${currentEnemy.hp}/${currentEnemy.max_hp}`;
             document.getElementById('question-text').textContent = currentQuestion.question;
             
             const optionsContainer = document.getElementById('options-container');
-            optionsContainer.innerHTML = currentQuestion.options.map((option, index) => `
-                <div class="option" onclick="selectAnswer(${index})">
-                    ${String.fromCharCode(65 + index)}) ${option}
-                </div>
-            `).join('');
+            optionsContainer.innerHTML = '';
+            
+            currentQuestion.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.textContent = `${String.fromCharCode(65 + index)}) ${option}`;
+                optionElement.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(optionElement);
+            });
             
             const video = document.getElementById('enemy-video');
             video.querySelector('source').src = currentEnemy.videoUrl;
             video.load();
             
             document.getElementById('submit-btn').disabled = true;
-            showScreen('battle-screen');
+            showScreen('battle');
         }
 
         function selectAnswer(index) {
@@ -1000,101 +668,123 @@
 
         function checkAnswer() {
             const correct = selectedAnswer === currentQuestion.answer;
-            player.answerQuestion(correct);
-            
-            const options = document.querySelectorAll('.option');
-            options.forEach((opt, index) => {
-                if (index === currentQuestion.answer) {
-                    opt.classList.add('correct');
-                } else if (index === selectedAnswer && !correct) {
-                    opt.classList.add('incorrect');
-                }
-                opt.style.pointerEvents = 'none';
-            });
-            
-            document.getElementById('submit-btn').disabled = true;
+            player.questionsAnswered++;
             
             if (correct) {
+                player.correctAnswers++;
                 const knowledgeBonus = player.knowledge[currentQuestion.category] || 1;
-                const damage = 8 * knowledgeBonus; // Reduced from 10
+                const damage = 8 * knowledgeBonus;
+                currentEnemy.hp -= damage;
                 
-                logMessage(`<span style="color: var(--success);">✅ Correct! +${damage} damage!</span>`, "battle");
+                document.querySelectorAll('.option')[currentQuestion.answer].classList.add('correct');
                 
-                if (currentEnemy.takeDamage(damage)) {
-                    const expGain = currentEnemy.level * 15; // Reduced from 20
-                    player.gainExp(expGain);
+                if (currentEnemy.hp <= 0) {
+                    currentEnemy.hp = 0;
+                    document.getElementById('enemy-hp').textContent = `HP: 0/${currentEnemy.max_hp}`;
+                    
+                    const expGain = currentEnemy.level * 15;
+                    player.exp += expGain;
+                    
+                    if (player.exp >= player.exp_to_level) {
+                        player.level++;
+                        player.max_hp += 15;
+                        player.hp = player.max_hp;
+                        player.exp -= player.exp_to_level;
+                        player.exp_to_level = Math.floor(player.exp_to_level * 1.3);
+                        
+                        // Improve random knowledge
+                        const categories = Object.keys(player.knowledge);
+                        const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+                        player.knowledge[randomCategory]++;
+                    }
+                    
                     enemiesDefeated++;
                     
                     if (enemiesDefeated >= ENEMIES_TO_WIN) {
-                        gameCompleted = true;
-                        setTimeout(showVictoryScreen, 1500);
+                        setTimeout(showVictory, 1500);
                     } else {
-                        currentEnemy = null;
-                        setTimeout(showMainMenu, 1500);
+                        setTimeout(() => {
+                            currentEnemy = null;
+                            updateMainMenu();
+                            showScreen('main');
+                        }, 1500);
                     }
-                    return;
                 }
             } else {
-                logMessage(`<span style="color: var(--danger);">❌ Incorrect! Answer: ${String.fromCharCode(65 + currentQuestion.answer)}</span>`, "battle");
+                document.querySelectorAll('.option')[selectedAnswer].classList.add('incorrect');
+                document.querySelectorAll('.option')[currentQuestion.answer].classList.add('correct');
+                
+                // Enemy attacks
+                player.hp -= currentEnemy.damage;
+                
+                if (player.hp <= 0) {
+                    player.hp = 0;
+                    setTimeout(showGameOver, 1500);
+                }
             }
             
-            if (currentEnemy && currentEnemy.hp > 0) {
-                setTimeout(() => {
-                    if (currentEnemy.attack(player)) {
-                        gameOver();
-                    } else {
-                        startBattle();
-                    }
-                }, 1500);
-            }
+            // Update displays
+            document.getElementById('battle-player-hp').textContent = `HP: ${player.hp}/${player.max_hp}`;
+            document.getElementById('enemy-hp').textContent = `HP: ${currentEnemy.hp}/${currentEnemy.max_hp}`;
+            
+            // Disable further selection
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.style.pointerEvents = 'none';
+            });
+            document.getElementById('submit-btn').disabled = true;
         }
 
         function tryFlee() {
             if (Math.random() < 0.5) {
-                logMessage(`<span style="color: var(--info);">🏃‍♂️ Escaped!</span>`, "battle");
+                alert("You successfully retreated!");
                 currentEnemy = null;
-                showMainMenu();
+                showScreen('main');
             } else {
-                logMessage(`<span style="color: var(--danger);">⚠️ Escape failed!</span>`, "battle");
-                setTimeout(() => {
-                    if (currentEnemy.attack(player)) {
-                        gameOver();
-                    } else {
-                        startBattle();
-                    }
-                }, 1000);
+                alert("Escape failed! The enemy attacks!");
+                
+                // Enemy attacks
+                player.hp -= currentEnemy.damage;
+                document.getElementById('battle-player-hp').textContent = `HP: ${player.hp}/${player.max_hp}`;
+                
+                if (player.hp <= 0) {
+                    player.hp = 0;
+                    setTimeout(showGameOver, 1500);
+                }
             }
         }
 
         function showLocationScreen() {
-            const locationCards = document.getElementById('location-cards');
-            locationCards.innerHTML = locations.map(loc => `
-                <div class="location-card" onclick="changeLocation('${loc.name}')">
-                    <h3 style="color: ${loc.color};">${loc.name}</h3>
-                    <p>${loc.description}</p>
-                    <div>
-                        ${loc.categories.map(cat => 
-                            `<span class="location-category">${cat}</span>`
-                        ).join('')}
-                    </div>
-                </div>
-            `).join('');
-            showScreen('location-screen');
-        }
-
-        function changeLocation(locationName) {
-            player.location = locationName;
-            logMessage(`<span style="color: #74b9ff;">✈️ Traveled to ${locationName}</span>`);
-            showMainMenu();
+            const container = document.getElementById('location-cards');
+            container.innerHTML = '';
+            
+            locations.forEach(location => {
+                const card = document.createElement('div');
+                card.className = 'location-card';
+                card.innerHTML = `
+                    <h3 style="color: ${location.color}">${location.name}</h3>
+                    <p>${location.description}</p>
+                `;
+                card.onclick = () => {
+                    player.location = location.name;
+                    updateMainMenu();
+                    showScreen('main');
+                };
+                container.appendChild(card);
+            });
+            
+            showScreen('location');
         }
 
         function rest() {
-            player.heal(20);
+            player.hp = Math.min(player.hp + 20, player.max_hp);
+            updateMainMenu();
+            alert(`Used health pack! +20 HP (Now ${player.hp}/${player.max_hp})`);
         }
 
-        function showVictoryScreen() {
-            const accuracy = player.getAccuracy();
+        function showVictory() {
+            const accuracy = Math.round((player.correctAnswers / player.questionsAnswered) * 100);
             
+            document.getElementById('game-over-title').textContent = "Mission Complete";
             document.getElementById('game-over-text').textContent = `Congratulations Dr. ${player.name}! You've saved the cell!`;
             document.getElementById('final-level').textContent = player.level;
             document.getElementById('questions-answered').textContent = player.questionsAnswered;
@@ -1103,23 +793,21 @@
             let comment = "";
             if (accuracy > 80) {
                 comment = "🏆 Perfect accuracy! You're a biology master!";
-                document.getElementById('performance-comment').style.color = "var(--success)";
             } else if (accuracy > 60) {
                 comment = "👍 Great job! Your knowledge saved the day!";
-                document.getElementById('performance-comment').style.color = "var(--warning)";
             } else {
                 comment = "📚 Good effort! Keep studying cellular biology!";
-                document.getElementById('performance-comment').style.color = "var(--info)";
             }
             document.getElementById('performance-comment').textContent = comment;
             
-            showScreen('game-over-screen');
+            showScreen('gameOver');
         }
 
-        function gameOver() {
-            const accuracy = player.getAccuracy();
+        function showGameOver() {
+            const accuracy = Math.round((player.correctAnswers / player.questionsAnswered) * 100);
             
-            document.getElementById('game-over-text').textContent = `Mission failed, Dr. ${player.name}.`;
+            document.getElementById('game-over-title').textContent = "Mission Failed";
+            document.getElementById('game-over-text').textContent = `Your expedition has ended, Dr. ${player.name}.`;
             document.getElementById('final-level').textContent = player.level;
             document.getElementById('questions-answered').textContent = player.questionsAnswered;
             document.getElementById('final-accuracy').textContent = `${accuracy}%`;
@@ -1127,26 +815,23 @@
             let comment = "";
             if (accuracy > 80) {
                 comment = "🎯 Great accuracy! Try again with better luck!";
-                document.getElementById('performance-comment').style.color = "var(--success)";
             } else if (accuracy > 60) {
                 comment = "💡 Good effort! Review your weak areas!";
-                document.getElementById('performance-comment').style.color = "var(--warning)";
             } else {
                 comment = "📚 Study more and try again!";
-                document.getElementById('performance-comment').style.color = "var(--info)";
             }
             document.getElementById('performance-comment').textContent = comment;
             
-            showScreen('game-over-screen');
+            showScreen('gameOver');
         }
 
         function resetGame() {
-            const name = player.name;
-            player = new Player(name);
-            enemiesDefeated = 0;
-            gameCompleted = false;
-            logMessage(`<span style="color: var(--primary);">🔬 New expedition started!</span>`);
-            showMainMenu();
+            showScreen('welcome');
+        }
+
+        function getRandomQuestion(category) {
+            const availableQuestions = biologyQuestions.filter(q => q.category === category);
+            return availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
         }
     </script>
 </body>
